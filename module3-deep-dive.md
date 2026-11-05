@@ -1,99 +1,263 @@
 # Module 3 deep dive: from the app to the firmware
 
-This page expands [Module 3](README.md#module-3-how-mlx5-doca-host-and-doca-fit-together) with a one-week study plan, an explanation of the setup commands, one call traced through every layer, and a map of the main interfaces between the layers. All commands run in Ubuntu (WSL). Type `wsl` first if your prompt starts with `PS C:\`. Every function name, file and opcode below was checked against the upstream sources.
+This page builds up in four steps. Read it in order. Each part assumes only the parts before it.
 
-## Study plan (about one week, one hour a day)
+1. [Use cases](#part-1-use-cases-what-customers-do-with-the-nic): what customers do with an NVIDIA NIC
+2. [The basics](#part-2-the-basics): how an NVIDIA NIC works, and what RDMA is
+3. [End to end](#part-3-end-to-end-configure-send-receive): configure, send and receive, from the app down to the firmware, with the API at each layer
+4. [Deep dive](#part-4-deep-dive): one call traced line by line, and the full interface tables
 
-**Day 1: Read and draw.** Read Module 3. Then close it and draw the four layers from memory: DOCA apps and SDK; user space (rdma-core `libmlx5` and the DPDK mlx5 driver); kernel (`mlx5_core` and `mlx5_ib`); firmware and hardware. Add DOCA-Host as the box that packages the middle two layers for customers. Compare with the diagram and fix what you missed.
+At the end: [hands-on lab and study plan](#part-5-hands-on-lab-and-study-plan).
 
-**Day 2: Get the source for each layer.** See [Getting the source, explained](#getting-the-source-explained).
+---
 
-**Day 3: Follow one call through all the layers.** See [One call, end to end](#one-call-end-to-end-dpdk-creates-a-send-queue).
+## Part 1: Use cases: what customers do with the NIC
 
-**Day 4: DOCA-Host and DOCA (reading).**
+Your drivers serve very different customers. Each use case enters the NIC through a different door, and a different part of your code carries it.
 
-- Read the DOCA-Host install guide and profiles at [docs.nvidia.com/doca](https://docs.nvidia.com/doca/sdk/index.html). Write down which profile (`doca-ofed`, `doca-roce`, `doca-networking`, `doca-all`) your main customers use.
-- Learn this fact: the kernel part of DOCA-Host (`mlnx-ofa_kernel`) is a backport of the upstream mlx5 you cloned on Day 2. It isn't a separate driver.
-- Skim the DOCA SDK library list (Flow, DMA, Comch, RDMA, GPUNetIO) and note which ones sit on top of the DPDK mlx5 driver or rdma-core.
-- In WSL, `lsmod | grep mlx5` shows nothing because a laptop has no ConnectX NIC. To see loaded drivers and run `ofed_info -s`, you need a lab server.
+| Use case | Example customers | How the app talks to the NIC | Your code that carries it |
+| --- | --- | --- | --- |
+| **Ordinary server networking** | Web servers, databases, Kubernetes pods | Normal sockets (`send`, `recv`) through the Linux kernel | `mlx5_core` (Ethernet part, called `mlx5e`) |
+| **Cloud and virtualization** | Cloud providers, VMs, OpenStack | One NIC split into many virtual NICs (SR-IOV VFs), virtual switch offloaded to the NIC (OVS, `tc`) | `mlx5_core` eswitch, SR-IOV, devlink |
+| **High-rate packet processing** | Firewalls, load balancers, 5G core, telecom | DPDK: the app drives the NIC directly from user space | DPDK mlx5 driver (PMD) + rdma-core |
+| **AI training and HPC** | GPU clusters, NCCL, MPI | RDMA verbs: GPUs and servers read and write each other's memory | rdma-core `libmlx5` + `mlx5_ib` |
+| **Storage** | NVMe over Fabrics, NFS over RDMA, SMB Direct | RDMA, used by storage code inside the kernel | `mlx5_ib` |
+| **DPU apps on BlueField** | Security, storage and network services running on the NIC's own Arm cores | DOCA libraries (DOCA Flow, DMA, Comch, ...) | DOCA, which uses the DPDK driver and rdma-core underneath |
 
-**Day 5: Talk to your team.** Book 30 minutes with a senior engineer and ask:
+So there are really **three doors** into the NIC:
 
-1. Walk me through one recent feature across firmware, kernel, user space and DOCA. Which patches went where, and when?
-2. Which of our changes are upstream, and which live only in DOCA-Host?
-3. Which kernel merge window is our next feature targeting?
-
-**Self-check.** You're done when you can answer without notes:
-
-- What is the difference between `mlx5_core` and `mlx5_ib`?
-- Where does `libmlx5` live, and how do you ask for a change there? (A GitHub PR to rdma-core.)
-- Why does DOCA-Host exist if the drivers are already in the upstream kernel?
-- If a feature misses a kernel merge window, how long does it wait? (About 9 to 10 weeks.)
-- What does "upstream first" save the company?
-
-## Getting the source, explained
-
-**1. Make a home for source code.**
-
-```bash
-mkdir -p ~/src && cd ~/src
-```
-
-`~` is your home folder in Ubuntu. `mkdir -p` creates the folder and doesn't complain if it already exists. `&&` runs the next command only if the first one worked. `cd` moves you into the folder.
-
-**2. Clone only the mlx5 part of the Linux kernel.**
-
-```bash
-git clone --depth 1 --filter=blob:none --sparse https://github.com/torvalds/linux.git
-```
-
-The full kernel is about 5 GB with more than 1.3 million commits. Three options shrink the download:
-
-| Option | What it does | Analogy |
+| Door | Who uses it | Goes through the kernel for packets? |
 | --- | --- | --- |
-| `--depth 1` | Only the latest commit, no history | A photo of today, not the whole album |
-| `--filter=blob:none` | The list of files, but contents only when needed | A library catalog, not the books |
-| `--sparse` | Only top-level files on disk, no folders yet | An empty bookshelf, ready to fill |
+| **Kernel sockets** | Almost every normal app | Yes, every packet |
+| **DPDK** | Packet-processing apps, DOCA Flow | No. Kernel only for setup |
+| **RDMA verbs** | AI, HPC, storage | No. Kernel only for setup |
 
-```bash
-cd ~/src/linux && git sparse-checkout set drivers/net/ethernet/mellanox/mlx5 drivers/infiniband/hw/mlx5 include/linux/mlx5 && cd ~/src
+Keep these three doors in mind. Part 3 walks through each one.
+
+---
+
+## Part 2: The basics
+
+### 2.1 How an NVIDIA NIC works
+
+A NIC (network interface card) moves data between the server's memory and the network cable. NVIDIA makes three families:
+
+- **ConnectX**: the NIC itself (for example ConnectX-7). Ethernet or InfiniBand, up to 400 Gb/s per port and beyond.
+- **BlueField DPU**: a ConnectX plus Arm CPU cores and memory on the same card. It runs its own Linux, so services can run on the card instead of the server.
+- **SuperNIC**: a BlueField tuned for AI clusters.
+
+All of them use the same driver family: **mlx5**.
+
+Inside the card there are four main parts:
+
+```
+                    SERVER (host)
+   +------------------------------------------------+
+   |  CPU / GPU          Host memory                |
+   |                     +-------------------------+|
+   |                     | Rings (queues):         ||
+   |                     |  SQ = send queue        ||
+   |                     |  RQ = receive queue     ||
+   |                     |  CQ = completion queue  ||
+   |                     | Packet buffers          ||
+   |                     +-------------------------+|
+   +------------------------|-----------------------+
+                            | PCIe (DMA reads/writes + doorbells)
+   +------------------------|-----------------------+
+   |  NVIDIA NIC            v                       |
+   |  [1] PCIe + DMA engines: copy data to/from     |
+   |      host memory by themselves                 |
+   |  [2] Firmware: small processors that run       |
+   |      setup commands from the driver            |
+   |  [3] Packet pipeline (hardware): parse, steer, |
+   |      checksum, encrypt, RDMA transport, switch |
+   |  [4] Ports: to the Ethernet or InfiniBand wire |
+   +------------------------------------------------+
 ```
 
-`git sparse-checkout set` tells Git which folders you want on disk:
+The key idea: **the driver and the NIC talk through memory.** The driver doesn't hand each packet to the NIC. Instead:
 
-- `drivers/net/ethernet/mellanox/mlx5`: **mlx5_core**, the Ethernet part (netdev, eswitch, SR-IOV, devlink)
-- `drivers/infiniband/hw/mlx5`: **mlx5_ib**, the RDMA and InfiniBand part
-- `include/linux/mlx5`: shared headers, including `mlx5_ifc.h`, which defines every command the driver can send to the NIC firmware
+1. The driver creates **rings** in host memory, with a firmware command (once, at setup).
+2. To send, the driver writes a small descriptor (a **WQE**, "work queue entry") into the send ring, then writes to a NIC register called a **doorbell**: "there is new work".
+3. The NIC's DMA engine reads the descriptor and the packet from host memory by itself and sends it.
+4. When done, the NIC writes a **CQE** ("completion queue entry") into the completion ring: "packet sent".
+5. Receive is the mirror image: the driver puts empty buffers in the receive ring ahead of time. The NIC writes arriving packets into them and adds a CQE.
 
-To also read the generic RDMA layer used in the trace below: `git sparse-checkout add drivers/infiniband/core`.
+So there are two very different speeds of work:
 
-**3. Clone rdma-core (user-space RDMA).**
+| | Slow path (control) | Fast path (data) |
+| --- | --- | --- |
+| What | Create and destroy rings, set MTU, add steering rules, read counters | Send and receive packets |
+| How | **Firmware command**: the driver writes a command to a mailbox, rings the command doorbell, firmware runs it and answers | **Rings + doorbells**: no firmware involved |
+| How often | Rarely (setup, changes) | Millions of times per second |
 
-```bash
-git clone --depth 1 https://github.com/linux-rdma/rdma-core.git
+There is also a third channel, from the NIC back to the driver: **events** (link went down, error, "command finished"). The NIC writes them into an event queue (EQ) and raises an interrupt.
+
+Other things the hardware does on its own (offloads): checksums, splitting large sends into packets (TSO), spreading traffic over CPU cores (RSS), VXLAN tunnels, encryption (IPsec, TLS, MACsec), and a full virtual switch for VMs (eswitch).
+
+### 2.2 What is RDMA
+
+**RDMA (Remote Direct Memory Access)** lets an app on one server read or write memory on another server directly, through the NICs, **without the remote CPU or the kernel touching the data**.
+
+Analogy: normal networking is like posting a letter. The post office (kernel) on each side receives, sorts and copies it. RDMA is like having a key to a shelf in the other building: you place the box on the shelf yourself, and the other side finds it there.
+
+Why customers want it:
+
+- **Low latency:** around 1 to 2 microseconds instead of tens of microseconds.
+- **No CPU cost:** the NICs do the transfer, so CPUs and GPUs keep computing.
+- **Zero copy:** data goes straight from app memory to app memory. With **GPUDirect RDMA**, it goes straight from GPU memory to GPU memory. That is why AI clusters depend on it.
+
+RDMA runs over two kinds of network:
+
+- **InfiniBand**: a separate network type, common in AI and HPC clusters.
+- **RoCE** ("rocky", RDMA over Converged Ethernet): RDMA inside normal Ethernet/UDP packets (UDP port 4791).
+
+The main RDMA objects (you will hear these words every day):
+
+| Object | What it is |
+| --- | --- |
+| **PD** (protection domain) | A security group: objects in one PD can work together |
+| **MR** (memory region) | A piece of app memory registered with the NIC, so the NIC may read or write it. Gives a local key (lkey) and a remote key (rkey) |
+| **QP** (queue pair) | A connection endpoint: one send queue + one receive queue. Like a socket |
+| **CQ** (completion queue) | Where the NIC reports "work done" |
+| **Verbs** | The API for all of this: `ibv_reg_mr`, `ibv_create_qp`, `ibv_post_send`, `ibv_poll_cq`, ... |
+
+Main operations: **RDMA WRITE** (put data into remote memory), **RDMA READ** (fetch data from remote memory), and **SEND/RECEIVE** (a message the other side has posted a buffer for).
+
+### 2.3 The layers, from app to wire
+
+```
+  App               web server       DPDK app / DOCA      AI / MPI / storage
+                    (sockets)        (rte_eth_*, doca_*)  (ibv_* verbs)
+  ---------------------------------------------------------------------------
+  User-space lib    libc             DPDK mlx5 driver     rdma-core libmlx5
+                                     + rdma-core (setup)
+  ---------------------------------------------------------------------------
+  Kernel            TCP/IP stack     ib_uverbs + mlx5_ib (setup only)
+                    mlx5_core (mlx5e)
+                    mlx5_core command interface (all firmware commands)
+  ---------------------------------------------------------------------------
+  NIC               firmware (commands)  +  hardware (rings, DMA, pipeline)
 ```
 
-The mlx5 part, **libmlx5**, is in `providers/mlx5/`. RDMA apps (MPI, NCCL, storage) use it to talk to the NIC.
+The two most important facts on this page:
 
-**4. Clone DPDK.**
+1. **Every setup action, from any door, ends as a firmware command sent by `mlx5_core`.**
+2. **For DPDK and RDMA, the kernel is not on the packet path at all.** The app writes descriptors and rings doorbells itself.
 
-```bash
-git clone --depth 1 https://github.com/DPDK/dpdk.git
-```
+---
 
-DPDK is a framework for very fast packet processing in user space. The NVIDIA drivers are in `drivers/net/mlx5/` (the PMD, which handles packets) and `drivers/common/mlx5/` (shared code, including the calls into rdma-core).
+## Part 3: End to end: configure, send, receive
 
-**5. Measure how much code your team owns.**
+Each flow below is one row per layer, from top to bottom. The **API** column is the interface the layer above uses to call the layer below.
 
-```bash
-cd ~/src && for d in linux/drivers/net/ethernet/mellanox/mlx5 linux/drivers/infiniband/hw/mlx5 rdma-core/providers/mlx5 dpdk/drivers/net/mlx5 dpdk/drivers/common/mlx5; do printf "%8d  %s\n" $(find $d -name '*.[ch]' -print0 | xargs -0 cat | wc -l) $d; done
-```
+### 3.1 Door 1: kernel sockets (example: a web server)
 
-This prints the number of lines of C code in each mlx5 folder. Together they come to several hundred thousand lines, spread over **three separate communities** (kernel, rdma-core, DPDK), each with its own maintainers, reviews and release schedule.
+**Configure (bring the port up):**
 
-## One call, end to end: DPDK creates a send queue
+| Step | Layer | API / what happens |
+| --- | --- | --- |
+| 1 | Admin | `ip link set eth0 up` |
+| 2 | User space to kernel | **netlink** message (the kernel's configuration API) |
+| 3 | Kernel net core | calls the driver through **`net_device_ops`** (`.ndo_open`) |
+| 4 | mlx5 driver | `mlx5e_open`: allocates rings in host memory |
+| 5 | Driver to firmware | **firmware commands**: `CREATE_CQ`, `CREATE_RQ`, `CREATE_SQ`, then "move to ready" |
+| 6 | NIC | rings are live, link comes up, an **event** tells the driver "link up" |
 
-This traces how a DPDK app creates a send queue (SQ) on the NIC, through every layer.
+**Send a packet:**
+
+| Step | Layer | API / what happens |
+| --- | --- | --- |
+| 1 | App | `send(socket, data)` |
+| 2 | App to kernel | **system call** |
+| 3 | Kernel TCP/IP | builds TCP/IP headers, picks the NIC |
+| 4 | Kernel to driver | **`net_device_ops`** (`.ndo_start_xmit` = `mlx5e_xmit`) |
+| 5 | mlx5 driver | writes a WQE into the send ring, rings the **doorbell** |
+| 6 | NIC hardware | DMA-reads the packet, adds checksums, sends it on the wire, writes a CQE |
+| 7 | Driver | on interrupt, reads the CQE and frees the buffer |
+
+**Receive a packet:**
+
+| Step | Layer | API / what happens |
+| --- | --- | --- |
+| 1 | NIC hardware | packet arrives; steering picks a receive ring; DMA writes it into a buffer the driver posted earlier; writes a CQE; raises an **interrupt** |
+| 2 | mlx5 driver | **NAPI** poll (`mlx5e_napi_poll`) reads the CQE and wraps the data as a kernel packet (skb) |
+| 3 | Kernel TCP/IP | checks it, finds the socket |
+| 4 | App | `recv(socket)` returns the data |
+
+Firmware is used only in "configure". Every packet goes through the kernel.
+
+### 3.2 Door 2: DPDK (example: a firewall)
+
+**Configure:**
+
+| Step | Layer | API / what happens |
+| --- | --- | --- |
+| 1 | App | `rte_eth_dev_configure()`, `rte_eth_rx_queue_setup()`, `rte_eth_tx_queue_setup()`, `rte_eth_dev_start()` (DPDK **ethdev API**) |
+| 2 | DPDK mlx5 driver | allocates rings in the app's own memory, builds the firmware commands itself (**DevX**) |
+| 3 | rdma-core | `mlx5dv_devx_obj_create()` (**mlx5 direct verbs API**) |
+| 4 | User space to kernel | **`ioctl()`** on `/dev/infiniband/uverbsN` |
+| 5 | Kernel mlx5_ib, then mlx5_core | security check, then sends the command |
+| 6 | Firmware | `CREATE_CQ`, `CREATE_RQ`, `CREATE_SQ`, same commands as door 1 |
+
+**Send and receive:**
+
+| Step | Layer | API / what happens |
+| --- | --- | --- |
+| 1 | App | `rte_eth_tx_burst(port, queue, packets, n)` / `rte_eth_rx_burst(...)` |
+| 2 | DPDK mlx5 driver | writes WQEs and rings the doorbell **directly from user space** / reads CQEs from memory |
+| 3 | NIC hardware | same as door 1 |
+| — | Kernel, firmware | **not involved** |
+
+No system calls, no interrupts (the app polls), no copies. This is why one CPU core can handle tens of millions of packets per second.
+
+### 3.3 Door 3: RDMA verbs (example: two GPU servers training a model)
+
+**Configure (once per connection):**
+
+| Step | App calls (**verbs API**) | What happens below |
+| --- | --- | --- |
+| 1 | `ibv_open_device()` | opens `/dev/infiniband/uverbsN` |
+| 2 | `ibv_alloc_pd()` | rdma-core `libmlx5` → `ioctl()` → `mlx5_ib` → firmware `ALLOC_PD` |
+| 3 | `ibv_reg_mr(buffer)` | kernel pins the memory so it can't move; firmware `CREATE_MKEY` gives the lkey and rkey |
+| 4 | `ibv_create_cq()`, `ibv_create_qp()` | firmware `CREATE_CQ`, `CREATE_QP`. The rings live in app memory |
+| 5 | exchange QP number, address and rkey with the other server | usually with **librdmacm** (`rdma_connect`) or a normal socket |
+| 6 | `ibv_modify_qp()` (RESET → INIT → RTR → RTS) | firmware `MODIFY_QP`: the connection is ready |
+
+**Send (RDMA WRITE to the other server's memory):**
+
+| Step | Layer | API / what happens |
+| --- | --- | --- |
+| 1 | App | `ibv_post_send(qp, RDMA_WRITE, local buffer, remote address, rkey)` |
+| 2 | rdma-core `libmlx5` | writes a WQE into the send ring, rings the **doorbell from user space** |
+| 3 | Local NIC | DMA-reads the buffer, sends RoCE or InfiniBand packets, handles retransmits in hardware |
+| 4 | Remote NIC | checks the rkey, **writes the data straight into the remote app's memory**. The remote CPU and kernel do nothing |
+| 5 | Local NIC → app | writes a CQE; the app sees it with `ibv_poll_cq()` |
+
+For SEND/RECEIVE instead of WRITE, the remote app first posts a buffer with `ibv_post_recv()` and later finds a CQE saying "a message arrived".
+
+Storage protocols (NVMe-oF, NFS over RDMA) use the same verbs, but from inside the kernel: they call `mlx5_ib` directly, with no rdma-core.
+
+### 3.4 What the three doors share
+
+| | Kernel sockets | DPDK | RDMA verbs |
+| --- | --- | --- | --- |
+| Setup API | netlink, `ethtool`, `ip` | `rte_eth_*` | `ibv_*` |
+| Setup path | kernel → `mlx5_core` | rdma-core → `ioctl` → `mlx5_ib` → `mlx5_core` | rdma-core → `ioctl` → `mlx5_ib` → `mlx5_core` |
+| Firmware commands | yes, at setup | yes, at setup | yes, at setup |
+| Packet path | app → kernel → driver → NIC | app + driver → NIC | app + libmlx5 → NIC |
+| Kernel per packet | yes | no | no |
+| Typical users | everyone | firewalls, telecom, DOCA Flow | AI, HPC, storage |
+
+---
+
+## Part 4: Deep dive
+
+Now the same flows with the real function names and firmware opcodes, checked against the upstream sources (Linux kernel, rdma-core, DPDK). File paths are relative to each project.
+
+### 4.1 One call traced line by line: DPDK creates a send queue
+
+This is step 2 to 6 of "Door 2: configure", in full detail.
 
 ```
 DPDK app (testpmd, OVS-DPDK, DOCA Flow)
@@ -134,19 +298,7 @@ DPDK app (testpmd, OVS-DPDK, DOCA Flow)
 - **Why DevX matters.** Many new hardware features reach DPDK and DOCA without a kernel change. That's faster, but it depends on the customer's kernel being new enough.
 - **Where bugs show up.** A firmware error often appears in DPDK logs as "create SQ failed". This map is how the team works out which layer is at fault.
 
-## The main interfaces between the layers
-
-The driver talks to the NIC in only three ways:
-
-| Channel | Direction | Used for | How it works |
-| --- | --- | --- | --- |
-| Command interface | Driver to firmware | Configuration and teardown (slow path) | The driver writes a command (opcode from `mlx5_ifc.h`) into a mailbox, rings the command doorbell, firmware replies |
-| Queues and doorbells | Driver and hardware | RX/TX packets (fast path) | The driver writes descriptors (WQEs) into rings and rings a doorbell. The NIC writes completions (CQEs). No firmware command per packet |
-| Event queues (EQ) | NIC to driver | Interrupts, link changes, errors, page requests | The NIC writes an event and raises an interrupt |
-
-There are two app paths: the **kernel netdev** path (sockets, `ip`, `ethtool`) and the **DPDK / DOCA** path (user space, DevX through rdma-core). Read each table top to bottom.
-
-### 1. NIC configuration
+### 4.2 NIC configuration in detail
 
 **Driver load** (boot or `modprobe mlx5_core`, no app involved):
 
@@ -169,9 +321,7 @@ There are two app paths: the **kernel netdev** path (sockets, `ip`, `ethtool`) a
 | Command layer | `mlx5_cmd_exec`, `mlx5_cmd_do`, doorbell (`cmd.c`) | Same |
 | Firmware | `CREATE_CQ 0x400`, `CREATE_RQ 0x908`, `CREATE_SQ 0x904`, `CREATE_TIS 0x912`, `CREATE_TIR 0x900`, `CREATE_RQT 0x916`, then `MODIFY_RQ 0x909` / `MODIFY_SQ 0x905` (reset to ready). MTU through `ACCESS_REG 0x805` | Same opcodes, built by DPDK itself |
 
-### 2. RX / TX packets (fast path)
-
-The most important point: **there is no firmware command here.** Packets move through memory rings and doorbells only.
+### 4.3 Send and receive in detail
 
 **TX (send):**
 
@@ -194,9 +344,16 @@ The most important point: **there is no firmware command here.** Packets move th
 | App | Stack (GRO, IP, TCP), socket, `recv()` | Gets `rte_mbuf` packets directly |
 | Firmware | none | none |
 
-**Why DPDK is fast:** after setup, the kernel and firmware are out of the loop. No system calls, no interrupts, no copies.
+**RDMA:**
 
-### 3. Deconfiguration (teardown)
+| App | rdma-core (`libmlx5`) | Kernel (mlx5_ib) | Firmware |
+| --- | --- | --- | --- |
+| `ibv_open_device`, `ibv_alloc_pd` | `mlx5_alloc_pd`, then `ioctl` | `mlx5_ib_alloc_pd` | `ALLOC_PD 0x800` |
+| `ibv_reg_mr` | `ioctl` | Pins memory, creates an MKEY | `CREATE_MKEY 0x200` |
+| `ibv_create_cq`, `ibv_create_qp`, `ibv_modify_qp` | `mlx5_create_qp` and others, then `ioctl` | `mlx5_ib_create_qp` and others | `CREATE_CQ 0x400`, `CREATE_QP 0x500`, `MODIFY_QP` (RST, INIT, RTR, RTS) |
+| `ibv_post_send`, `ibv_poll_cq` | Writes a WQE and rings the doorbell from user space | none | none (fast path, like DPDK) |
+
+### 4.4 Deconfiguration (teardown) in detail
 
 | Layer | Kernel netdev path | DPDK / DOCA path |
 | --- | --- | --- |
@@ -208,7 +365,7 @@ The most important point: **there is no firmware command here.** Packets move th
 
 **Manager point:** if a DPDK app crashes, the kernel still cleans up. Its file handle closes and mlx5_ib runs the saved destroy commands. Leaks here are a classic source of bugs, so ask about tests for it.
 
-### 4. Others
+### 4.5 Other interfaces
 
 **Statistics and link:**
 
@@ -234,25 +391,106 @@ The most important point: **there is no firmware command here.** Packets move th
 | `devlink dev flash` | `mlx5_devlink_flash_update` | Flash update through `ACCESS_REG` |
 | `devlink dev reload` | `mlx5_devlink_reload_down` / `_up` | Full teardown, then load again |
 
-**RDMA (verbs apps: MPI, NCCL, storage):**
-
-| App | rdma-core (`libmlx5`) | Kernel (mlx5_ib) | Firmware |
-| --- | --- | --- | --- |
-| `ibv_open_device`, `ibv_alloc_pd` | `mlx5_alloc_pd`, then `ioctl` | `mlx5_ib_alloc_pd` | `ALLOC_PD 0x800` |
-| `ibv_reg_mr` | `ioctl` | Pins memory, creates an MKEY | `CREATE_MKEY 0x200` |
-| `ibv_create_cq`, `ibv_create_qp`, `ibv_modify_qp` | `mlx5_create_qp` and others, then `ioctl` | `mlx5_ib_create_qp` and others | `CREATE_CQ 0x400`, `CREATE_QP 0x500`, `MODIFY_QP` (RST, INIT, RTR, RTS) |
-| `ibv_post_send`, `ibv_poll_cq` | Writes a WQE and rings the doorbell from user space | none | none (fast path, like DPDK) |
-
 **Events (NIC to driver).** The NIC writes to an EQ (created with `CREATE_EQ 0x301`) and mlx5_core handles it: link up/down changes the netdev carrier; a firmware request for memory triggers `MANAGE_PAGES`; a command completion wakes the waiting `mlx5_cmd_do`; errors feed the devlink health reporters.
 
 **Firmware tools (outside the driver).** `mlxconfig`, `mlxfwmanager` and `mstflint` talk to firmware directly through PCI. They set persistent options (for example, SR-IOV and the number of VFs) that apply after a reboot or firmware reset.
 
-## Summary
+---
 
-**Setup and teardown use firmware commands (opcodes). Packets use rings and doorbells, with no firmware. Events come back to the driver through EQs.** The kernel path enters through netlink and `net_device_ops`. The DPDK and DOCA path enters through rdma-core DevX `ioctl()` for setup, then bypasses the kernel completely for packets.
+## Part 5: Hands-on lab and study plan
 
-To see which firmware commands a driver file sends:
+### 5.1 Get the source for each layer
+
+All commands run in Ubuntu (WSL). Type `wsl` first if your prompt starts with `PS C:\`.
+
+**1. Make a home for source code.**
 
 ```bash
-cd ~/src/linux && grep -rn "MLX5_CMD_OP_" drivers/net/ethernet/mellanox/mlx5/core/transobj.c | head -20
+mkdir -p ~/src && cd ~/src
 ```
+
+`~` is your home folder in Ubuntu. `mkdir -p` creates the folder and doesn't complain if it already exists. `&&` runs the next command only if the first one worked. `cd` moves you into the folder.
+
+**2. Clone only the mlx5 part of the Linux kernel.**
+
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/torvalds/linux.git
+```
+
+The full kernel is about 5 GB with more than 1.3 million commits. Three options shrink the download:
+
+| Option | What it does | Analogy |
+| --- | --- | --- |
+| `--depth 1` | Only the latest commit, no history | A photo of today, not the whole album |
+| `--filter=blob:none` | The list of files, but contents only when needed | A library catalog, not the books |
+| `--sparse` | Only top-level files on disk, no folders yet | An empty bookshelf, ready to fill |
+
+```bash
+cd ~/src/linux && git sparse-checkout set drivers/net/ethernet/mellanox/mlx5 drivers/infiniband/hw/mlx5 drivers/infiniband/core include/linux/mlx5 && cd ~/src
+```
+
+`git sparse-checkout set` tells Git which folders you want on disk:
+
+- `drivers/net/ethernet/mellanox/mlx5`: **mlx5_core**, the Ethernet part (netdev, eswitch, SR-IOV, devlink)
+- `drivers/infiniband/hw/mlx5`: **mlx5_ib**, the RDMA and InfiniBand part
+- `drivers/infiniband/core`: the generic RDMA layer (`ib_uverbs`), used in the trace in 4.1
+- `include/linux/mlx5`: shared headers, including `mlx5_ifc.h`, which defines every command the driver can send to the NIC firmware
+
+**3. Clone rdma-core (user-space RDMA).**
+
+```bash
+git clone --depth 1 https://github.com/linux-rdma/rdma-core.git
+```
+
+The mlx5 part, **libmlx5**, is in `providers/mlx5/`.
+
+**4. Clone DPDK.**
+
+```bash
+git clone --depth 1 https://github.com/DPDK/dpdk.git
+```
+
+The NVIDIA drivers are in `drivers/net/mlx5/` (the PMD, which handles packets) and `drivers/common/mlx5/` (shared code, including the calls into rdma-core).
+
+**5. Measure how much code your team owns.**
+
+```bash
+cd ~/src && for d in linux/drivers/net/ethernet/mellanox/mlx5 linux/drivers/infiniband/hw/mlx5 rdma-core/providers/mlx5 dpdk/drivers/net/mlx5 dpdk/drivers/common/mlx5; do printf "%8d  %s\n" $(find $d -name '*.[ch]' -print0 | xargs -0 cat | wc -l) $d; done
+```
+
+This prints the lines of C code in each mlx5 folder: several hundred thousand in total, spread over **three separate communities** (kernel, rdma-core, DPDK), each with its own maintainers, reviews and release schedule.
+
+**6. Follow the trace from 4.1 yourself.**
+
+```bash
+cd ~/src && grep -rn "mlx5dv_devx_obj_create" dpdk/drivers/common/mlx5 | head -5
+```
+
+```bash
+cd ~/src/rdma-core && sed -n '6290,6345p' providers/mlx5/verbs.c
+```
+
+```bash
+cd ~/src/linux && grep -n "MLX5_CMD_OP_CREATE_SQ\b" include/linux/mlx5/mlx5_ifc.h
+```
+
+### 5.2 Study plan (about one week, one hour a day)
+
+- **Day 1:** Read Parts 1 and 2. Then draw the NIC (rings, doorbell, DMA, firmware) and the three doors from memory.
+- **Day 2:** Read Part 3. For each door, say out loud which API each layer uses and where firmware is involved.
+- **Day 3:** Do lab 5.1 and follow the trace in 4.1 in the real source.
+- **Day 4:** DOCA-Host and DOCA. Read the install guide and profiles at [docs.nvidia.com/doca](https://docs.nvidia.com/doca/sdk/index.html). Note which profile (`doca-ofed`, `doca-roce`, `doca-networking`, `doca-all`) your customers use. Remember: the DOCA-Host kernel part (`mlnx-ofa_kernel`) is a backport of the upstream mlx5 you cloned.
+- **Day 5:** Book 30 minutes with a senior engineer and ask: (1) walk me through one recent feature across firmware, kernel, user space and DOCA; (2) which of our changes are upstream, and which live only in DOCA-Host; (3) which kernel merge window does our next feature target?
+
+### 5.3 Self-check
+
+You're done when you can answer without notes:
+
+1. Name the three doors into the NIC and one customer type for each.
+2. What is a doorbell, and what is a CQE?
+3. Which work uses firmware commands, and which doesn't?
+4. What is RDMA, and why do AI clusters need it?
+5. What are a QP, an MR and an rkey?
+6. Why is DPDK faster than kernel sockets?
+7. What is the difference between `mlx5_core` and `mlx5_ib`?
+8. Why can one feature need patches in four projects?
