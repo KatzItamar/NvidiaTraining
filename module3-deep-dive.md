@@ -4,7 +4,7 @@ This page builds up in four steps. Read it in order. Each part assumes only the 
 
 1. [Use cases](#part-1-use-cases-what-customers-do-with-the-nic): what customers do with an NVIDIA NIC
 2. [The basics](#part-2-the-basics): how an NVIDIA NIC works, and what RDMA is
-3. [End to end](#part-3-end-to-end-configure-send-receive): configure, send and receive, from the app down to the firmware, with the API at each layer
+3. [End to end](#part-3-end-to-end-configure-send-receive): configure, send and receive, from the app down to the firmware, with the API at each layer, plus [NCCL](#35-nccl-the-biggest-rdma-customer), the AI library that drives door 3
 4. [Deep dive](#part-4-deep-dive): one call traced line by line, and the full interface tables
 
 At the end: [hands-on lab and study plan](#part-5-hands-on-lab-and-study-plan).
@@ -249,6 +249,77 @@ Storage protocols (NVMe-oF, NFS over RDMA) use the same verbs, but from inside t
 | Kernel per packet | yes | no | no |
 | Typical users | everyone | firewalls, telecom, DOCA Flow | AI, HPC, storage |
 
+### 3.5 NCCL: the biggest RDMA customer
+
+**What it is.** NCCL (NVIDIA Collective Communications Library, said "nickel") is the library PyTorch, TensorFlow and JAX call when many GPUs must work as one. Its main operations are called *collectives*:
+
+| Collective | What it does | Typical use in AI |
+| --- | --- | --- |
+| AllReduce | Every GPU adds its numbers and all get the sum | Combining gradients every training step |
+| AllGather | Every GPU gets every other GPU's piece | Model sharding |
+| ReduceScatter | Sum, then each GPU keeps one slice | Sharded training |
+| Send / Recv | Point to point | Pipeline parallelism |
+
+Inside one server, NCCL moves data over NVLink or PCIe. **Between servers, it uses the network: your NIC and your drivers.**
+
+**Where it sits.** NCCL enters through door 3, RDMA verbs (3.3). Nothing in the data path is NCCL-specific: NCCL is simply the biggest and most demanding user of `libmlx5` and `mlx5_ib`.
+
+```
+ PyTorch            torch.distributed, backend="nccl"
+    |  ncclAllReduce(...)
+ NCCL               libnccl.so: rings and trees, proxy thread
+    |  net plugin API: listen, connect, accept, regMr, isend, irecv, test
+ NCCL IB transport  built in (src/transport/net_ib/), or a plugin (e.g. SHARP)
+    |  ibv_reg_mr, ibv_create_qp, ibv_post_send (RDMA WRITE) ...   <- door 3
+ rdma-core          libibverbs + libmlx5: writes WQEs, rings doorbells
+    |  ioctl (setup only)
+ mlx5_ib -> mlx5_core -> firmware commands (CREATE_QP 0x500, CREATE_MKEY 0x200 ...)
+    |
+ ConnectX / BlueField / SuperNIC -> InfiniBand or RoCE -> the other server
+```
+
+**Configure (once, when training starts):**
+
+| Step | NCCL does | API it calls | Ends up in |
+| --- | --- | --- | --- |
+| 1 | Finds GPUs, NICs and the PCIe / NVLink layout | sysfs, `ibv_get_device_list`, `ibv_query_port` | `mlx5_ib` query paths |
+| 2 | Picks the NIC closest to each GPU | its own topology logic | nothing below (pure software) |
+| 3 | Opens the NIC, creates a PD and CQs | `ibv_open_device`, `ibv_alloc_pd`, `ibv_create_cq` | firmware ALLOC_PD 0x800, CREATE_CQ 0x400 |
+| 4 | **Registers GPU memory** so the NIC can reach it | `ibv_reg_dmabuf_mr`, `mlx5dv_reg_dmabuf_mr`, or `ibv_reg_mr` | `mlx5_ib` → firmware CREATE_MKEY 0x200. GPU pages arrive through **dma-buf** or the **nvidia-peermem** module |
+| 5 | Creates QPs and connects them to the peer (QP numbers are swapped over a TCP socket) | `ibv_create_qp`, `ibv_modify_qp` (INIT → RTR → RTS) | firmware CREATE_QP 0x500 and the QP state-change commands |
+
+**Send and receive (every training step, millions of times):**
+
+| Step | What happens | Firmware? |
+| --- | --- | --- |
+| 1 | PyTorch calls `ncclAllReduce`. NCCL's GPU kernel and its CPU proxy thread cut the data into chunks | no |
+| 2 | The receiver tells the sender "write here" with a small RDMA WRITE (the *clear to send*) | no |
+| 3 | The proxy thread posts the chunk as RDMA WRITEs straight from GPU memory, the last one as RDMA WRITE WITH IMMEDIATE, via `ibv_post_send` | no: `libmlx5` writes WQEs and rings the doorbell |
+| 4 | The NIC reads GPU memory over PCIe (**GPUDirect RDMA**) and sends it | no: hardware |
+| 5 | The remote NIC writes straight into the remote GPU's memory. The immediate value creates a CQE, so the receiver knows the chunk is complete | no |
+| 6 | Both sides call `ibv_poll_cq` to collect completions. The receiver may do a small RDMA READ ("flush") so the GPU sees all the data | no |
+
+This is the "fast path, no firmware" rule from 2.1, at enormous scale. (These steps match `src/transport/net_ib/p2p.cc` in NCCL v2.32.)
+
+**NVIDIA pieces around NCCL that touch your area:**
+
+| Piece | What it is | Link to your team |
+| --- | --- | --- |
+| GPUDirect RDMA | The NIC reads and writes GPU memory directly | Needs **dma-buf** (upstream, supported by `mlx5_ib`) or **nvidia-peermem** (older peer-memory interface) |
+| GPU-initiated networking | Newer NCCL lets the GPU itself write WQEs and ring the doorbell, with no CPU proxy | Built on **DOCA GPUNetIO** (NCCL ships it under `src/transport/net_ib/gdaki/`). A direct DOCA ↔ mlx5 link |
+| SHARP | Quantum InfiniBand switches do the AllReduce math inside the network | NCCL SHARP plugin ([nccl-rdma-sharp-plugins](https://github.com/Mellanox/nccl-rdma-sharp-plugins)), CollNet |
+| Spectrum-X / SuperNIC | Ethernet (RoCE) built for AI: adaptive routing, congestion control | Firmware and mlx5 features, shipped with DOCA-Host |
+| RoCE congestion control | DCQCN, ECN and PFC keep RoCE close to lossless | Set through mlx5 firmware and tools (`mlnx_qos`, devlink parameters) |
+| UCX | Another communication library, used by MPI | Also built on `libmlx5` |
+
+**What you will hear from NCCL users:**
+
+- **"NCCL is slow."** Usual causes: the wrong NIC for the GPU, GPUDirect RDMA not active, or PCIe settings (ACS, relaxed ordering). First step: run with `NCCL_DEBUG=INFO`, which prints the NIC and transport chosen and whether GPUDirect (GDR) is on.
+- **"transport retry counter exceeded"** (`IBV_WC_RETRY_EXC_ERR` in the CQE). Packets were lost or the peer died. Usually the fabric or congestion, sometimes driver or firmware.
+- **Memory registration failures.** dma-buf not supported, nvidia-peermem not loaded, or a locked-memory limit (`ulimit -l`).
+- **Settings to recognize:** `NCCL_IB_HCA` (which NICs), `NCCL_SOCKET_IFNAME` (which interface for setup traffic), `NCCL_IB_GID_INDEX` (RoCE addressing), `NCCL_NET_GDR_LEVEL`, `NCCL_IB_QPS_PER_CONNECTION`, `NCCL_IB_ADAPTIVE_ROUTING`, `NCCL_IB_PCI_RELAXED_ORDERING`, `NCCL_IB_TIMEOUT`, `NCCL_IB_RETRY_CNT`.
+- **The standard benchmark:** `all_reduce_perf` from [nccl-tests](https://github.com/NVIDIA/nccl-tests). It is the first thing customers run, and the first number they quote.
+
 ---
 
 ## Part 4: Deep dive
@@ -474,11 +545,27 @@ cd ~/src/rdma-core && sed -n '6290,6345p' providers/mlx5/verbs.c
 cd ~/src/linux && grep -n "MLX5_CMD_OP_CREATE_SQ\b" include/linux/mlx5/mlx5_ifc.h
 ```
 
+**7. See where NCCL meets your code.**
+
+```bash
+cd ~/src && git clone --depth 1 https://github.com/NVIDIA/nccl.git
+```
+
+```bash
+cd ~/src/nccl && grep -n "wrap_ibv_post_send\|IBV_WR_RDMA" src/transport/net_ib/p2p.cc
+```
+
+```bash
+cd ~/src/nccl && grep -n "reg_dmabuf_mr\|ibv_reg_mr" src/transport/net_ib/reg.cc
+```
+
+The first grep shows NCCL posting RDMA WRITEs: that is the `ibv_post_send` of 3.3. The second shows NCCL registering GPU memory. To go one layer down, find `mlx5_post_send` in `~/src/rdma-core/providers/mlx5/qp.c`: that is the code that writes the WQE, and its helper `post_send_db` rings the doorbell. The plugin API that NCCL uses toward any network is in `src/include/plugin/nccl_net.h`.
+
 ### 5.2 Study plan (about one week, one hour a day)
 
 - **Day 1:** Read Parts 1 and 2. Then draw the NIC (rings, doorbell, DMA, firmware) and the three doors from memory.
 - **Day 2:** Read Part 3. For each door, say out loud which API each layer uses and where firmware is involved.
-- **Day 3:** Do lab 5.1 and follow the trace in 4.1 in the real source.
+- **Day 3:** Do lab 5.1 and follow the trace in 4.1 in the real source. Finish with step 7: follow one NCCL `ibv_post_send` down into `libmlx5`.
 - **Day 4:** DOCA-Host and DOCA. Read the install guide and profiles at [docs.nvidia.com/doca](https://docs.nvidia.com/doca/sdk/index.html). Note which profile (`doca-ofed`, `doca-roce`, `doca-networking`, `doca-all`) your customers use. Remember: the DOCA-Host kernel part (`mlnx-ofa_kernel`) is a backport of the upstream mlx5 you cloned.
 - **Day 5:** Book 30 minutes with a senior engineer and ask: (1) walk me through one recent feature across firmware, kernel, user space and DOCA; (2) which of our changes are upstream, and which live only in DOCA-Host; (3) which kernel merge window does our next feature target?
 
@@ -494,3 +581,5 @@ You're done when you can answer without notes:
 6. Why is DPDK faster than kernel sockets?
 7. What is the difference between `mlx5_core` and `mlx5_ib`?
 8. Why can one feature need patches in four projects?
+9. Which door does NCCL use, and which firmware commands does it trigger at setup? Which ones per packet?
+10. What is GPUDirect RDMA, and what two ways can the NIC get access to GPU memory?
