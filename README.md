@@ -173,6 +173,8 @@ Each mlx5 piece is built in its upstream project first. DOCA-Host bundles the us
 - Upstream release dates are not under NVIDIA's control. A feature that misses a kernel merge window waits about 9 to 10 weeks for the next one.
 - "Upstream first" lowers long-term maintenance cost. A patch that lives only in DOCA-Host must be carried and rebased forever.
 
+**Go deeper:** a study plan, one call traced from DPDK to firmware, and the interfaces between every layer are in [Module 3 deep dive](module3-deep-dive.md).
+
 ## Module 4: mlx5 upstream: clone, read, and ask for changes
 
 In the Linux kernel you ask for a change by emailing a patch to the right maintainers and mailing list. There are no pull requests on GitHub. Reviewers reply by email, and a maintainer applies the patch to their tree. That tree flows to Linus Torvalds during the next merge window.
