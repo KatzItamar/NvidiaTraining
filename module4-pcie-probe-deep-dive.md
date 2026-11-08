@@ -54,10 +54,15 @@ in between, where the kernel discovers what is on the bus, is **enumeration**.
  │   A host bridge driver binds to it and creates struct pci_host_bridge            │
  │   + the root struct pci_bus (bus 00).                                            │
  ├──────────────────────────────────────────────────────────────────────────────────┤
- │ Stage 2  ENUMERATION                                                             │
- │   For every bus, every device 0..31, every function 0..7:                        │
- │   read the Vendor ID from config space. Present? -> allocate struct pci_dev.     │
- │   Bridge? -> create a child struct pci_bus and recurse.                          │
+ │ Stage 2  ENUMERATION  (find out what is plugged in)                              │
+ │   The kernel does not know what hardware exists, so it tries every address:      │
+ │   on bus 00, for device 0..31 (and its functions 0..7), it reads the first       │
+ │   4 bytes of that address's config space (the Vendor ID and Device ID).          │
+ │     0xffffffff            -> nothing at this address, try the next one           │
+ │     a real ID (15b3:101d) -> a device is there: create a struct pci_dev          │
+ │   If the device found is a bridge (for example a root port), there is another    │
+ │   bus behind it: give that bus a number, create a struct pci_bus for it, and     │
+ │   scan it the same way. Repeat until there are no more bridges.                  │
  ├──────────────────────────────────────────────────────────────────────────────────┤
  │ Stage 3  RESOURCE ASSIGNMENT                                                     │
  │   Size every BAR, assign MMIO / IO addresses, program bridge windows.            │
@@ -268,7 +273,90 @@ Both paths converge on the same core steps:
 
 ## 4. Stage 2: Enumeration (scanning the buses)
 
-### 4.1 The scan loop
+### 4.1 In plain words: a worked example
+
+**The problem.** When the host bridge is ready, the kernel knows only that bus 00
+exists. It does not know what cards are plugged in, how many buses there are, or
+which bus the ConnectX is on.
+
+**The trick.** Every possible device has a fixed address: bus / device / function
+(section 2.2). Each address has a config space (section 2.3), and its first 4 bytes
+are always the Vendor ID and Device ID. So the kernel reads those 4 bytes at every
+possible address, like knocking on every door in a street:
+
+- **No device at that address:** the read fails, and the CPU gets `0xffffffff`
+  (all ones). Nobody home, move on.
+- **A device is there:** it answers with its IDs, for example `0x101d15b3`
+  (vendor `15b3` = Mellanox, device `101d` = ConnectX-6 Dx). The kernel creates a
+  `struct pci_dev` for it.
+
+**Why bridges matter.** Some of the devices found are *bridges* (on PCIe, every
+root port and switch port is one). A bridge is a door to another street: there is a
+whole new bus behind it. The kernel gives that bus a number, creates a
+`struct pci_bus` for it, and knocks on every door there too. That is the recursion.
+
+**Two shortcuts** keep the scan short:
+
+- Functions 1..7 are only tried if function 0 exists **and** its header says the
+  device is multi-function.
+- Behind a PCIe port there is a single link, so only device 0 can exist on that bus.
+  The kernel skips devices 1..31 there (`only_one_child()`).
+
+**Trace for the example machine** from section 2.1 (root port IDs are illustrative):
+
+```
+ Step  Address    First 4 bytes   What it means                     What the kernel does
+ ────  ─────────  ──────────────  ────────────────────────────────  ──────────────────────────────────
+ Scan bus 00 (the root bus)
+  1    00:00.0    0xffffffff      empty                             next device
+  2    00:01.0    0x????8086      Root Port, header type 1 = bridge create pci_dev, note "bridge"
+  3    00:02.0    0x????8086      Root Port, bridge                 create pci_dev, note "bridge"
+  4    00:03.0    0xffffffff      empty                             next device
+  ...  00:1f.0    0xffffffff      empty                             bus 00 done
+
+ Go behind bridge 00:01.0
+  5    -          -               bridge needs a bus number         use bus 3b, create pci_bus 3b
+                                                                    (firmware usually set it in the
+                                                                     bridge's secondary bus register;
+                                                                     if not, the kernel assigns one)
+ Scan bus 3b
+  6    3b:00.0    0x101d15b3      ConnectX-6 Dx, function 0;        create pci_dev 3b:00.0
+                                  header says multi-function        → also try functions 1..7
+  7    3b:00.1    0x101d15b3      ConnectX-6 Dx, function 1         create pci_dev 3b:00.1
+  8    3b:00.2-7  0xffffffff      empty                             -
+  9    3b:01.0+   (not read)      PCIe link: only device 0          skip; bus 3b done, no bridges here
+
+ Go behind bridge 00:02.0
+ 10    -          -               bridge needs a bus number         assign bus 5e, create pci_bus 5e
+ 11    5e:00.0    0x....144d      NVMe SSD (example)                create pci_dev; bus 5e done
+
+ No bridges left → enumeration finished.
+```
+
+**The result** is a tree of kernel objects that mirrors the hardware:
+
+```
+ pci_bus 00
+   ├─ pci_dev 00:01.0 (root port) ──► pci_bus 3b
+   │                                    ├─ pci_dev 3b:00.0  ConnectX PF0
+   │                                    └─ pci_dev 3b:00.1  ConnectX PF1
+   └─ pci_dev 00:02.0 (root port) ──► pci_bus 5e
+                                        └─ pci_dev 5e:00.0  NVMe
+```
+
+No driver has run yet. These `pci_dev` objects only say *what* is there. Matching
+drivers to them happens in stage 4.
+
+**How a "read" actually happens.** With ECAM (section 2.4), reading the IDs of
+`3b:00.0` is just a 32-bit memory read at:
+
+```
+ ECAM_base + (0x3b << 20) + (0 << 15) + (0 << 12) + 0x00  =  ECAM_base + 0x3b00000
+```
+
+The rest of this section shows the same process in kernel code.
+
+### 4.2 The scan loop
 
 ```
 pci_scan_child_bus(bus)                                    probe.c
@@ -300,7 +388,7 @@ pci_scan_child_bus(bus)                                    probe.c
 It is a **depth-first walk**: scan a bus, then descend through each bridge and scan
 the bus behind it.
 
-### 4.2 Detecting a device: the Vendor ID read
+### 4.3 Detecting a device: the Vendor ID read
 
 `pci_bus_generic_read_dev_vendor_id()` reads the first dword of config space:
 
@@ -329,7 +417,7 @@ For a ConnectX-6 Dx at `3b:00.0` the read returns `0x101d15b3`:
    └─────── device = 0x101d  (ConnectX-6 Dx)
 ```
 
-### 4.3 Filling in the `pci_dev`: `pci_setup_device()`
+### 4.4 Filling in the `pci_dev`: `pci_setup_device()`
 
 | Reads | Stores in `pci_dev` |
 |---|---|
@@ -350,7 +438,7 @@ back, restore. The bits that stay zero give the size:
 
 (Values illustrative; the real size depends on the ConnectX model and firmware.)
 
-### 4.4 Registering the `pci_dev`: `pci_device_add()`
+### 4.5 Registering the `pci_dev`: `pci_device_add()`
 
 ```
 pci_device_add(dev, bus)                                   probe.c
