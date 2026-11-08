@@ -392,7 +392,90 @@ DPDK app (testpmd, OVS-DPDK, DOCA Flow)
 | Command layer | `mlx5_cmd_exec`, `mlx5_cmd_do`, doorbell (`cmd.c`) | Same |
 | Firmware | `CREATE_CQ 0x400`, `CREATE_RQ 0x908`, `CREATE_SQ 0x904`, `CREATE_TIS 0x912`, `CREATE_TIR 0x900`, `CREATE_RQT 0x916`, then `MODIFY_RQ 0x909` / `MODIFY_SQ 0x905` (reset to ready). MTU through `ACCESS_REG 0x805` | Same opcodes, built by DPDK itself |
 
-### 4.2a MSI-X: how the NIC interrupts the CPU
+### 4.2a `probe_one` walked step by step: where DMA, MSI-X and RDMA get configured
+
+**When it runs.** The kernel PCI core finds a ConnectX device whose ID is in the `mlx5_core` ID table and calls `probe_one()` (`drivers/net/ethernet/mellanox/mlx5/core/main.c`). It is the single entry point for "the driver takes over this card". `remove_one()` undoes it in reverse order.
+
+**Pattern to recognise.** Every step is followed by `if (err) goto some_label;`. The labels at the bottom undo the steps **in reverse order**. If someone adds a new step and forgets its label, a failed probe leaks that resource.
+
+**What each function in `probe_one` does**
+
+| # | Function | Purpose |
+| --- | --- | --- |
+| 1 | `mlx5_devlink_alloc` | Allocates the main `struct mlx5_core_dev`, wrapped in a devlink object (the hook for the `devlink` command) |
+| 2 | `mlx5_adev_idx_alloc` | Reserves a number used to name the child auxiliary devices (`mlx5_core.eth.N`, `mlx5_core.rdma.N`) |
+| 3 | `mlx5_mdev_init` | **Software only**: locks, workqueues, the profile (resource limits). The hardware is not touched yet |
+| 4 | `mlx5_pci_init` | **Makes the card reachable from the CPU and lets it do DMA** (details below) |
+| 5 | `mlx5_shd_init` | Shared-device state, when several PCI functions belong to one physical device |
+| 6 | `mlx5_init_one` | **The big one**: talks to firmware, creates the software objects and hardware resources, creates the child devices (details below) |
+| 7 | `mlx5_vhca_debugfs_init`, `pci_save_state` | Debug files; saves PCI config so the device can be recovered after a PCI error |
+
+**Step 4 in detail: `mlx5_pci_init` (this is where DMA is allowed)**
+
+| Call | Why |
+| --- | --- |
+| `mlx5_pci_enable_device`, `request_bar` | Enables the PCI function and claims its BARs (the register windows) |
+| `pci_set_master` | **Lets the NIC start its own memory reads and writes (bus mastering).** Without it, no DMA works, including MSI-X writes |
+| `set_dma_caps` (`main.c`) | `dma_set_mask_and_coherent(..., DMA_BIT_MASK(64))` tells the kernel "this NIC can address 64 bits of memory"; `dma_set_max_seg_size` sets 2 GB per scatter-gather segment |
+| `pci_enable_atomic_ops_to_root` | Enables PCIe atomic operations, needed by RDMA atomics |
+| `ioremap(bar_addr, sizeof(*iseg))` | Maps the **initialization segment** (`dev->iseg`): the first registers used to talk to firmware |
+| `mlx5_pci_vsc_init`, `pci_enable_ptm` | Vendor-specific config space access; PCIe precision time |
+
+**Step 6 in detail: `mlx5_init_one` → `mlx5_init_one_devl_locked`**
+
+| Order | Function | What happens |
+| --- | --- | --- |
+| a | `mlx5_function_setup` → `mlx5_function_enable` | Waits for firmware to boot (`wait_fw_init`), then `mlx5_cmd_enable`, `mlx5_core_enable_hca` (`ENABLE_HCA`), `mlx5_core_set_issi`, `mlx5_satisfy_startup_pages` (`MANAGE_PAGES`). Then `mlx5_function_open`: `set_hca_ctrl`, `set_hca_cap`, more init pages, `mlx5_cmd_init_hca` (`INIT_HCA`), and `mlx5_query_hca_caps` |
+| b | `mlx5_init_once` | Software objects that live as long as the device: IRQ table object, EQ table object, clock, SR-IOV, eswitch, flow-steering core, SF tables, tracer, and so on |
+| c | `mlx5_devlink_params_register` | Registers the devlink parameters |
+| d | `mlx5_load` | **Hardware resources**: BlueFlame register, `mlx5_events_start`, `mlx5_pagealloc_start`, **`mlx5_irq_table_create` (MSI-X vectors)**, **`mlx5_eq_table_create` (EQs + `CREATE_EQ`)**, flow steering, `mlx5_core_set_hca_defaults`, SR-IOV attach, LAG, devlink traps |
+| e | `mlx5_register_device` | **Creates the child devices (Ethernet, RDMA, ...)**. This is where RDMA comes in |
+| f | `mlx5_crdump_enable`, `mlx5_hwmon_dev_register` | Crash dump and temperature sensor. Failure here is only logged |
+
+**Where DMA is configured: three layers**
+
+| Layer | When | What |
+| --- | --- | --- |
+| 1. Permission | `mlx5_pci_init` | `pci_set_master` and `set_dma_caps`: the NIC may do DMA, and may reach 64-bit addresses |
+| 2. First DMA buffers | `mlx5_function_enable` → `mlx5_cmd_enable` | The **command queue** (mailbox to firmware) is allocated with `dma_alloc_coherent` and a `dma_pool` (`cmd.c`). Its DMA address is written to the device registers `cmdq_addr_h` / `cmdq_addr_l_sz`. From now on firmware reads commands from host RAM. Then `MANAGE_PAGES` gives the NIC **host memory pages** it asks for to keep internal state |
+| 3. Per-use DMA | Later, when someone needs a queue | `mlx5_eq_table_create` makes the EQ rings (`CREATE_EQ`, section 4.2b). Ethernet and RDMA queues, and memory regions (`CREATE_MKEY`), are created on request. Each one hands firmware a DMA address |
+
+**Where MSI-X is configured.** In `mlx5_load` (step d): `mlx5_irq_table_create` allocates the vectors (`pci_alloc_irq_vectors`), then `mlx5_eq_table_create` requests each IRQ and creates the EQs. Sections 4.2b and 4.2c follow that in detail.
+
+**Where RDMA is configured: core makes the capability, `mlx5_ib` makes the interface**
+
+1. In steps a and d, mlx5_core sets the device capabilities in firmware and builds the base resources. It has no RDMA verbs code.
+2. `mlx5_register_device` → `mlx5_rescan_drivers_locked` → `mlx5_attach_device` (`dev.c`) walks the table `mlx5_adev_devices[]` and, for each supported and enabled protocol, creates an **auxiliary device**. The RDMA one has the suffix `"rdma"`.
+3. The kernel finds the auxiliary driver `mlx5r_driver` and calls `mlx5r_probe` (`drivers/infiniband/hw/mlx5/main.c`). This is the **`mlx5_ib`** module. It allocates the `ib_device`, runs its init stages, and ends with `ib_register_device(&ibdev, name, &mdev->pdev->dev)`, using the **PCI device as the DMA device**.
+4. From then on `/dev/infiniband/uverbsN` exists and `ibv_get_device_list` (rdma-core) sees the card.
+
+```
+probe_one ─► mlx5_pci_init ──► DMA allowed (bus master, 64-bit mask)
+          └► mlx5_init_one ─► function_setup ─► command queue (DMA) + firmware pages
+                           ├► init_once ─────► software objects
+                           ├► mlx5_load ─────► MSI-X vectors + EQs (DMA rings)
+                           └► register_device ─► aux device "rdma" ─► mlx5r_probe (mlx5_ib)
+                                                                      └► ib_register_device ─► verbs
+```
+
+**What a manager does with this**
+
+| Customer says | Think |
+| --- | --- |
+| "`ibv_devices` is empty but `ip link` shows the NIC" | `mlx5_core` loaded fine; `mlx5_ib` did not load or its probe failed. Ask for `lsmod \| grep mlx5`, `dmesg \| grep mlx5`, `rdma link` |
+| "Probe fails: `mlx5_pci_init failed`" | PCI-level problem: BIOS, IOMMU, a bad slot. Not a firmware or RDMA bug |
+| "`Failed setting DMA capabilities`" | Platform cannot give a DMA mask the NIC needs (IOMMU or bounce buffer setup) |
+| "`mlx5_init_one failed`" with a firmware timeout | Firmware did not boot or is stuck: firmware update, reset, health reporter (`devlink health`) |
+| "Failed to alloc IRQs" | MSI-X vector shortage (section 4.2b) |
+
+**Exercise**
+
+1. Read `probe_one` top to bottom. For each step, say whether it touches only software, the PCI bus, or firmware.
+2. In `main.c` find `set_dma_caps` and the `pci_set_master` call. Why must both come before `mlx5_cmd_enable`?
+3. Find `mlx5_register_device` and follow it to `mlx5_adev_devices[]` in `dev.c`. List the protocol suffixes.
+4. Find `mlx5r_probe` in `drivers/infiniband/hw/mlx5/main.c` and the call to `ib_register_device`.
+
+### 4.2b MSI-X: how the NIC interrupts the CPU
 
 **What it is.** The NIC must tell the CPU "something happened" (a packet arrived, a send finished, the link went down). It does this with an **interrupt**. MSI-X is the PCIe way: the NIC does not use a wire. It does an ordinary **memory write** to a special address, and the CPU's interrupt controller turns that write into an interrupt. One device can have **many vectors** (a vector is one numbered interrupt, with its own address and data value). This is why a modern NIC can spread work over many CPU cores: **one vector per CPU core's queue**.
 
@@ -456,7 +539,7 @@ So an interrupt is two steps: (1) the NIC writes an **event entry (EQE)** into t
 2. In the source, follow one completion: `mlx5_eq_comp_int` → `cq->comp` → `mlx5e_completion_event` → `napi_schedule`.
 3. Find the line where `CREATE_EQ` sets `intr` to the vector index.
 
-### 4.2b From an RDMA queue to the CPU: the full interrupt path (ARM GIC and x86)
+### 4.2c From an RDMA queue to the CPU: the full interrupt path (ARM GIC and x86)
 
 **The one idea to remember: MSI-X does not go "into" a queue.** There are three separate things, in three different places. They are connected only by **numbers** that software writes down at setup time.
 
@@ -780,3 +863,6 @@ You're done when you can answer without notes:
 14. Trace one RDMA completion from the NIC to the CPU: which queues are written by DMA, and which step is the MSI-X write?
 15. What does the NIC write on ARM (GICv3 + ITS) versus x86, and who decides which CPU runs the handler?
 16. What does `comp_vector` in `ibv_create_cq` choose?
+17. Why do the error labels in `probe_one` run in reverse order of the init calls?
+18. Where is DMA allowed (which call), where does the first DMA buffer appear, and where do MSI-X vectors get set up?
+19. Which module creates the RDMA interface, and what is the link between `mlx5_core` and it?
