@@ -214,6 +214,11 @@ Tip: a full kernel clone is several GB. In WSL keep it inside the Linux file sys
 
 Find the official owners with: `grep -n -A12 "MELLANOX MLX5" MAINTAINERS` and `./scripts/get_maintainer.pl -f drivers/net/ethernet/mellanox/mlx5/core/en_main.c`. The mlx5 maintainers listed there are NVIDIA engineers, so many of them are likely your own colleagues. Confirm the current names in the file.
 
+**Go deeper:** how the driver comes to life, in two parts. Read them in order:
+
+1. [PCIe deep dive](module4-pcie-probe-deep-dive.md): how Linux probes the PCIe host bridge, enumerates the buses, finds the ConnectX and calls `mlx5_core`'s `probe_one()`.
+2. [mlx5 core objects deep dive](module4-mlx5-core-objects-deep-dive.md): `pdev`, `devlink`, `mlx5_core_dev` and the auxiliary devices that the Ethernet (`mlx5e`) and RDMA (`mlx5_ib`) drivers bind to.
+
 ### 4.3 The trees and how code flows
 
 | Tree | Owner | Takes |
