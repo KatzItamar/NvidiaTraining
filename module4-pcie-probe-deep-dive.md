@@ -154,7 +154,91 @@ how software discovers and configures the device **before** any driver exists.
 Type 1 headers (bridges) replace BAR2..5 with **primary / secondary / subordinate
 bus numbers** and **memory/IO windows**. That is what lets enumeration walk downwards.
 
-### 2.4 How the CPU reaches config space: ECAM
+### 2.4 MMIO: how the CPU talks to a device
+
+**MMIO (Memory-Mapped I/O)** means a device's registers are placed at physical
+memory addresses. The CPU talks to the device with ordinary load and store
+instructions, as if it were reading and writing RAM. The address just goes to the
+device instead of to RAM.
+
+The CPU's physical address space is shared between RAM and devices:
+
+```
+ Physical address space
+ ┌──────────────────────────┐ high
+ │ ...                      │
+ │ ConnectX BAR0  (32 MB)   │ ◄── loads/stores here go over PCIe to the NIC
+ │ NVMe BAR0                │
+ │ PCIe ECAM (config space) │ ◄── also MMIO (section 2.5)
+ ├──────────────────────────┤
+ │ RAM                      │ ◄── loads/stores here go to DRAM
+ └──────────────────────────┘ 0
+```
+
+When the CPU writes to an address inside the ConnectX range, the Root Complex turns
+the write into a PCIe *Memory Write* packet. The packet travels down the link, and
+the NIC treats it as a write to one of its registers. A read works the same way,
+except the NIC sends the value back in a *Completion* packet.
+
+**MMIO across the stages of this guide.** Each stage does one part of the job for
+the ConnectX's BAR0:
+
+| Stage | What happens to the MMIO range | Where |
+|---|---|---|
+| 1. Host bridge probe | Firmware tells the kernel which physical address ranges the Root Complex forwards to PCIe (its MMIO *windows*) | Section 3 |
+| 2. Enumeration | The kernel reads BAR0 to learn **how much** MMIO space the NIC needs (32 MB) | Section 4.4 |
+| 3. Resource assignment | The kernel picks **where**: an address inside the window, written into BAR0 and the bridge windows | Section 5 |
+| 5. Driver probe | `pci_enable_device()` turns on memory decoding; `ioremap()` maps BAR0 into kernel virtual memory | Section 7.2 |
+| After probe | mlx5 reads and writes registers through that mapping | below |
+
+**How mlx5 uses it.** The kernel runs on virtual addresses, so the driver first maps
+the physical BAR, then uses special accessors:
+
+```c
+/* main.c, mlx5_pci_init(): map BAR0 */
+dev->bar_addr = pci_resource_start(pdev, 0);              /* physical address of BAR0 */
+dev->iseg = ioremap(dev->bar_addr, sizeof(*dev->iseg));   /* kernel virtual address  */
+
+/* cmd.c: read and write firmware registers in the "init segment" */
+cmd_l = ioread32be(&dev->iseg->cmdq_addr_l_sz) & 0xff;    /* MMIO read  */
+iowrite32be(cmd_h, &dev->iseg->cmdq_addr_h);              /* MMIO write: where the
+                                                             command queue is in RAM */
+iowrite32be(1 << ent->idx, &dev->iseg->cmd_dbell);        /* MMIO write: doorbell,
+                                                             "a new command is ready" */
+```
+
+The init segment (`struct mlx5_init_seg`) is the start of BAR0. It holds the
+firmware version, the command queue address and doorbell, and health counters.
+Further into BAR0 are the doorbell pages the data path uses to tell the NIC that new
+packets are ready to send.
+
+**Why special accessors and not plain pointers.** MMIO is not memory:
+
+- **No caching:** every access must really reach the device. `ioremap()` sets up an
+  uncached mapping.
+- **No reordering:** the compiler and CPU must not reorder or merge accesses.
+  `ioread32()`/`iowrite32()` (and `readl()`/`writel()`) include the needed barriers.
+  The `be` variants also convert byte order, because ConnectX registers are big-endian.
+- **Side effects:** reading a register can change device state (for example, clear
+  a status bit).
+- **Slow reads:** an MMIO read is a round trip over PCIe, roughly a microsecond. Fast
+  paths therefore mostly *write* (doorbells) and let the device use DMA instead.
+
+**MMIO, port I/O and DMA**
+
+| Mechanism | Direction | Used for |
+|---|---|---|
+| **MMIO** | CPU → device registers | Control: doorbells, configuration, status |
+| **Port I/O** (`inb`/`outb`, x86 only) | CPU → a separate small I/O address space | Legacy devices. Modern NICs barely use it. |
+| **DMA** | Device ↔ RAM directly | Bulk data: packets, descriptors, completions |
+
+The typical NIC pattern combines them: the driver puts descriptors in RAM, writes a
+doorbell over **MMIO**, and the NIC fetches the descriptors and packet data from RAM
+by **DMA**. MMIO is the small control channel; DMA moves the data. (This is why
+`mlx5_pci_init()` also calls `pci_set_master()`: a device must be bus master to do
+DMA.)
+
+### 2.5 How the CPU reaches config space: ECAM
 
 On modern systems, config space is memory-mapped (ECAM, Enhanced Configuration
 Access Mechanism). Firmware tells the kernel the ECAM base (ACPI `MCFG` table, or
@@ -168,7 +252,7 @@ The host bridge driver provides `struct pci_ops { .read, .write }` that implemen
 this. Every config access in the kernel (`pci_read_config_dword()` and friends)
 ends up in those ops.
 
-### 2.5 The key kernel structures
+### 2.6 The key kernel structures
 
 | Structure | Represents | Created in |
 |---|---|---|
@@ -347,7 +431,7 @@ whole new bus behind it. The kernel gives that bus a number, creates a
 No driver has run yet. These `pci_dev` objects only say *what* is there. Matching
 drivers to them happens in stage 4.
 
-**How a "read" actually happens.** With ECAM (section 2.4), reading the IDs of
+**How a "read" actually happens.** With ECAM (section 2.5), reading the IDs of
 `3b:00.0` is just a 32-bit memory read at:
 
 ```
@@ -462,8 +546,8 @@ and its BARs may not have addresses yet.
 ## 5. Stage 3: Resource assignment
 
 Enumeration only learns BAR **sizes**. Before a driver can use a BAR, it needs an
-**address** inside the host bridge's MMIO window, and every bridge on the path must
-forward that range.
+**address** inside the host bridge's MMIO window (section 2.4), and every bridge on
+the path must forward that range.
 
 ```
 pci_assign_unassigned_root_bus_resources(bus)               setup-bus.c
@@ -668,8 +752,9 @@ mlx5_pci_init(dev, pdev, id)                                main.c
                                                 map BAR0 → the firmware "init segment"
 ```
 
-From here on, the driver talks to the ConnectX firmware through BAR0 (command
-queue, doorbells) and DMA. The rest of the mlx5 story (firmware handshake, EQs,
+From here on, the driver talks to the ConnectX firmware through BAR0 over MMIO
+(command queue, doorbells) and moves data by DMA. See section 2.4 for how those
+MMIO reads and writes work. The rest of the mlx5 story (firmware handshake, EQs,
 auxiliary devices for Ethernet / RDMA) continues in `mlx5_init_one()`.
 
 ### 7.3 The connection between the two guides
@@ -843,8 +928,18 @@ pci:v000015B3d0000101Dsv000015B3sd00000016bc02sc00i00
 | Example device IDs | CX-6 Dx PF `0x101d`, CX-6 PF `0x101b`, CX-7 `0x1021`, CX-8 `0x1023`, VF `0x101e` |
 | Class | `0x020000` (Ethernet) or `0x020700` (InfiniBand), depending on port type |
 | PCI driver | `mlx5_core`; `.probe = probe_one` |
-| Main BAR | BAR0, 64-bit prefetchable: firmware init segment + doorbells |
+| Main BAR | BAR0, 64-bit prefetchable: firmware init segment + doorbells, accessed over MMIO (`ioremap` + `ioread32be`/`iowrite32be`) |
 | VF marker | `.driver_data = MLX5_PCI_DEV_IS_VF` in `mlx5_core_pci_table` |
+
+**Terms**
+
+| Term | Meaning |
+|---|---|
+| BAR | Base Address Register: tells the system how much MMIO space a device needs, and holds the address it was given |
+| MMIO | Memory-Mapped I/O: device registers reached with normal loads/stores at physical addresses (section 2.4) |
+| ECAM | Config space reached over MMIO (section 2.5) |
+| DMA | The device reads/writes RAM directly, without the CPU |
+| Doorbell | An MMIO write that tells the device "new work is ready" |
 
 **Five things to remember**
 
@@ -853,6 +948,8 @@ pci:v000015B3d0000101Dsv000015B3sd00000016bc02sc00i00
 2. Enumeration is a depth-first scan: read Vendor ID at every bus/device/function;
    all-ones means empty; bridges lead to child buses.
 3. Enumeration learns BAR **sizes**. Resource assignment gives them **addresses**.
+   The driver then maps the BAR with `ioremap()` and talks to the device over MMIO
+   (control) while the device moves data by DMA.
 4. Drivers bind by matching vendor/device IDs against their `id_table`, whichever
    of device or driver appears first.
 5. For a ConnectX, the matched entry of `mlx5_core_pci_table` is passed as `id` to

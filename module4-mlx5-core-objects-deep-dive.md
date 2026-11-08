@@ -336,6 +336,13 @@ struct device  *d    = dev->device;                      /* == &pdev->dev */
    `dev = devlink_priv(devlink)`  ≡  `(void *)devlink->priv`
 ```
 
+**`bar_addr` and `iseg`: the link to the hardware.** `bar_addr` is the physical
+address the PCI core gave the ConnectX's BAR0. `iseg` is the same range mapped into
+kernel virtual memory with `ioremap()`. Every register access to the firmware goes
+through `iseg` with `ioread32be()`/`iowrite32be()`, which is MMIO. See
+[PCIe deep dive, section 2.4](module4-pcie-probe-deep-dive.md#24-mmio-how-the-cpu-talks-to-a-device)
+for what MMIO is and how BAR0 got its address.
+
 ---
 
 ## 6. Auxiliary devices: how Ethernet and RDMA attach
