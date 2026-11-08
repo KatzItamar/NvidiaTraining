@@ -392,6 +392,70 @@ DPDK app (testpmd, OVS-DPDK, DOCA Flow)
 | Command layer | `mlx5_cmd_exec`, `mlx5_cmd_do`, doorbell (`cmd.c`) | Same |
 | Firmware | `CREATE_CQ 0x400`, `CREATE_RQ 0x908`, `CREATE_SQ 0x904`, `CREATE_TIS 0x912`, `CREATE_TIR 0x900`, `CREATE_RQT 0x916`, then `MODIFY_RQ 0x909` / `MODIFY_SQ 0x905` (reset to ready). MTU through `ACCESS_REG 0x805` | Same opcodes, built by DPDK itself |
 
+### 4.2a MSI-X: how the NIC interrupts the CPU
+
+**What it is.** The NIC must tell the CPU "something happened" (a packet arrived, a send finished, the link went down). It does this with an **interrupt**. MSI-X is the PCIe way: the NIC does not use a wire. It does an ordinary **memory write** to a special address, and the CPU's interrupt controller turns that write into an interrupt. One device can have **many vectors** (a vector is one numbered interrupt, with its own address and data value). This is why a modern NIC can spread work over many CPU cores: **one vector per CPU core's queue**.
+
+| Old way | MSI-X |
+| --- | --- |
+| Shared wire (INTx), one interrupt for the whole device | Up to 2048 vectors per PCIe function |
+| Every core fights over one handler | Each queue gets its own vector, pinned to its own core |
+
+**The key idea: three tables, three owners**
+
+| Piece | Owner | Job |
+| --- | --- | --- |
+| MSI-X table in the NIC (address + data per vector) | Kernel PCI/IRQ core programs it | Tells the NIC where to write for each vector |
+| IRQ (Linux interrupt number, `virq`) | Kernel | What shows in `/proc/interrupts` |
+| EQ (event queue, a DMA ring in host memory) | mlx5_core | The NIC writes the event details here. The MSI-X write only says "look at your EQ" |
+
+So an interrupt is two steps: (1) the NIC writes an **event entry (EQE)** into the EQ in host memory by DMA, (2) it then sends the **MSI-X write** to wake a CPU. The handler reads the EQ to find out what happened. This is why the interrupt itself carries no data.
+
+**Where it happens in the code** (all in `drivers/net/ethernet/mellanox/mlx5/core/`):
+
+| Step | When | Function (file) | What it does |
+| --- | --- | --- | --- |
+| 1 | `mlx5_load` in probe | `mlx5_irq_table_create` (`pci_irq.c`) | Decides how many vectors: `num_ports × online CPUs + 1`, capped by the device's EQ limit and by `pci_msix_vec_count()` (the size of the NIC's MSI-X table, read from PCI config space) |
+| 2 | same | `pci_alloc_irq_vectors(..., PCI_IRQ_MSIX)` | Asks the kernel PCI core to enable MSI-X. If the platform supports *dynamic* MSI-X (`pci_msix_can_alloc_dyn`), only vector 0 is allocated now; the rest are added later, on demand |
+| 3 | same | `irq_pools_init` (`pci_irq.c`) | Splits the vectors into **pools**: one for the PF's queues, one for SFs (sub-functions) |
+| 4 | `mlx5_eq_table_create` (`eq.c`) | `mlx5_irq_alloc` (`pci_irq.c`) | For each vector: gets a `virq` (`pci_irq_vector` or `pci_msix_alloc_irq_at`), then calls **`request_irq(virq, irq_int_handler, ...)`** and sets CPU affinity (`irq_set_affinity_and_hint`) |
+| 5 | same | `create_map_eq` (`eq.c`) | Sends firmware **`CREATE_EQ 0x301`** with `eqc.intr = vecidx`. This links the EQ to the vector. Also gives the EQ's DMA pages (`pas[]`) |
+| 6 | runtime | `irq_int_handler` (`pci_irq.c`) | Tiny: just calls `atomic_notifier_call_chain` for that vector |
+| 7 | runtime | `mlx5_eq_comp_int` (completion) or `mlx5_eq_async_int` (async), in `eq.c` | Reads EQEs from the EQ while the ownership bit says "new". For a completion, it finds the CQ by number and calls `cq->comp()` |
+| 8 | runtime | `mlx5e_completion_event` (`en_txrx.c`) | Ethernet: calls `napi_schedule()`. The interrupt hands over to NAPI polling, so heavy traffic doesn't cause one interrupt per packet |
+
+**Two kinds of EQ, many vectors:**
+
+- **Async EQ** (vector 0 / control IRQ): link events, firmware requests for pages, command completions, errors, fatal health events. One per device.
+- **Completion EQs**: one per CPU (up to the limit). Each serves many CQs. For Ethernet each channel's CQ is tied to one comp EQ. For RDMA, `mlx5_ib` creates CQs with `ibv_create_cq` and picks a completion vector (`comp_vector`); NCCL and other apps usually poll and don't wait for the interrupt.
+
+**Affinity and why a manager cares:** vectors are pinned to cores (`irq_affinity.c`, `mlx5_irq_affinity_request`) so a queue's work stays on a core close to the NIC (same NUMA node). Wrong affinity (for example, `irqbalance` moving interrupts to the wrong socket) is a classic cause of "throughput is lower than expected".
+
+**Related settings:**
+
+- `ethtool -L eth0 combined N`: number of channels (queues, each using one comp EQ and one vector).
+- `ethtool -C eth0 ...`: interrupt moderation (wait a little before interrupting, to batch). Also adaptive moderation, DIM (`en_dim.c`).
+- `cat /proc/interrupts | grep mlx5`: one line per vector, with a counter per CPU. Names look like `mlx5_async0@pci:0000:03:00.0` (the control vector) and `mlx5_comp3@pci:0000:03:00.0`. If the device only has one vector, it is called `mlx5_combined0`.
+- `cat /proc/irq/<N>/smp_affinity_list`: where a vector is pinned.
+- `lspci -vv -s 03:00.0 | grep -i msi-x`: how many vectors the NIC offers and whether MSI-X is enabled.
+
+**What goes wrong (what you will hear):**
+
+| Report | Likely cause |
+| --- | --- |
+| `Failed to alloc IRQs` / probe fails | Not enough vectors (VM with few, or BIOS/platform limit), `pci=nomsi` on the kernel command line |
+| One core at 100% in softirq, others idle | Affinity: all queues on one core, or too few channels |
+| High latency, low CPU use | Interrupt moderation too aggressive |
+| Counters in `/proc/interrupts` not rising | Wrong IRQ mapping, interrupt remapping or hypervisor problem, or the app is polling (normal for DPDK and RDMA polling) |
+| A VF has fewer vectors than the PF | The PF assigns MSI-X per VF (SR-IOV), check the VF's limits |
+
+**DPDK and RDMA polling.** DPDK poll-mode drivers normally turn interrupts **off** and poll the CQ in a loop. That is why they are fast and why they use 100% of a core. The MSI-X path is mostly used for link events and optional Rx-interrupt mode. RDMA apps can arm a CQ and wait on a completion channel (`ibv_req_notify_cq`) when they prefer sleeping to polling.
+
+**Exercise:**
+1. On a machine with a ConnectX card, run `grep mlx5 /proc/interrupts`. Count the vectors and match them to `ethtool -l`.
+2. In the source, follow one completion: `mlx5_eq_comp_int` → `cq->comp` → `mlx5e_completion_event` → `napi_schedule`.
+3. Find the line where `CREATE_EQ` sets `intr` to the vector index.
+
 ### 4.3 Send and receive in detail
 
 **TX (send):**
@@ -583,3 +647,6 @@ You're done when you can answer without notes:
 8. Why can one feature need patches in four projects?
 9. Which door does NCCL use, and which firmware commands does it trigger at setup? Which ones per packet?
 10. What is GPUDirect RDMA, and what two ways can the NIC get access to GPU memory?
+11. What is MSI-X, and why does the NIC write an EQ entry *and* an interrupt?
+12. What is the relation between a vector, an IRQ number, an EQ and a CQ?
+13. A customer has one core at 100% softirq. Which three things do you check first?
