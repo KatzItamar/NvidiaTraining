@@ -458,92 +458,118 @@ So an interrupt is two steps: (1) the NIC writes an **event entry (EQE)** into t
 
 ### 4.2b From an RDMA queue to the CPU: the full interrupt path (ARM GIC and x86)
 
-This section follows **one completion** from the moment the NIC finishes a send to the moment a CPU runs code. It adds the part 4.2a left out: the queues, and the interrupt controller.
+**The one idea to remember: MSI-X does not go "into" a queue.** There are three separate things, in three different places. They are connected only by **numbers** that software writes down at setup time.
 
-**The queue objects (all are rings in host memory, filled by DMA)**
-
-| Object | Created by | Direction | Job |
+| # | Thing | Where it lives | What it is |
 | --- | --- | --- | --- |
-| SQ (send queue) | `ibv_create_qp` | App writes WQEs, NIC reads | Work to send |
-| RQ (receive queue) | `ibv_create_qp` | App writes WQEs, NIC reads | Buffers to receive into |
-| CQ (completion queue) | `ibv_create_cq(ctx, n, ctx, channel, **comp_vector**)` | NIC writes CQEs, app reads | "This WQE is done" (good or error) |
-| EQ (event queue) | mlx5_core, at probe (`mlx5_eq_table_create`) | NIC writes EQEs, driver reads | "CQ number X has a new CQE", and async events |
-| MSI-X vector | PCI core + mlx5_core | NIC writes one word to an address | "Wake a CPU" |
+| A | **DMA queues** (SQ, RQ, CQ, EQ) | Host RAM | Rings of entries. The NIC reads and writes them using PCIe DMA. The CPU reads and writes them as normal memory |
+| B | **MSI-X table** | Inside the NIC (in a PCIe BAR) | A list of vectors. Each entry is just two numbers: an **address** and a **data** value |
+| C | **Interrupt controller** | In the SoC: GICv3 + ITS on ARM, local APIC (+ IOMMU remapping) on x86 | Receives a memory write at a special address and turns it into "CPU n, run handler m" |
 
-A QP has an SQ and an RQ. Each QP is tied to a CQ (or two). **Each CQ is tied to one EQ, and each EQ is tied to one MSI-X vector.** The chain is: **CQ → EQ → vector → IRQ → CPU**.
+Think of a post office: the **EQ is the mailbox** (the letter with the details), the **MSI-X write is the doorbell** (only says "come look"), and the **GIC/ITS is the switchboard** that decides which employee (CPU) goes to the door.
 
-**Where each link is made in the code**
+```
+  HOST RAM (DMA queues)                           NIC                       SoC interrupt controller
+ ┌────────────────────┐                  ┌──────────────────────┐
+ │ SQ ring  (WQEs)    │ ◄── DMA read ─── │  send/receive engine │
+ │ RQ ring  (WQEs)    │ ◄── DMA read ─── │                      │
+ │ CQ ring  (CQEs)    │ ◄── DMA write ── │  (1) work finished   │
+ │ EQ ring  (EQEs)    │ ◄── DMA write ── │  (2) "CQ 7 has news" │
+ └────────────────────┘                  │                      │
+                                         │  CQ 7 → EQ 3 → vec 5 │   ← numbers stored in NIC objects
+                                         │                      │
+                                         │  MSI-X table[5]:     │
+                                         │   addr = ITS reg     │  (3) one 4-byte PCIe write      ┌──────────────┐
+                                         │   data = 5           │ ──────────────────────────────► │  ITS / GIC   │ → CPU 2
+                                         └──────────────────────┘                                 └──────────────┘
+```
 
-| Link | Where | How |
+**Step A: how the three are linked (setup, once, at probe or when queues are created)**
+
+| Link | Who does it | What is written |
 | --- | --- | --- |
-| CQ → EQ | `mlx5_ib_create_cq` (`drivers/infiniband/hw/mlx5/cq.c`) | Reads `attr->comp_vector`, calls `mlx5_comp_eqn_get(mdev, vector, &eqn)`, then `MLX5_SET(cqc, cqc, c_eqn_or_apu_element, eqn)` inside firmware `CREATE_CQ 0x400`. Ethernet does the same in `en_main.c` (`mlx5e_create_cq`) |
-| EQ → vector | `create_map_eq` (`eq.c`) | `MLX5_SET(eqc, eqc, intr, vecidx)` inside `CREATE_EQ 0x301` |
-| vector → IRQ number | `mlx5_irq_alloc` (`pci_irq.c`) | `pci_irq_vector()` or `pci_msix_alloc_irq_at()` gives a Linux `virq`; `request_irq()` installs the handler |
-| IRQ → CPU | same, plus `irq_affinity.c` | `irq_set_affinity_and_hint()` picks the CPU mask |
-| Vector → address+data in the NIC | **kernel PCI/MSI core**, not mlx5 | Writes the vector's *address* and *data* into the NIC's **MSI-X table** (inside a BAR). mlx5 never writes these itself |
+| QP → CQ | `ibv_create_qp` → firmware `CREATE_QP` | The QP object holds the CQ number (`cqn`) |
+| CQ → EQ | `ibv_create_cq(..., comp_vector)` → `mlx5_ib_create_cq` (`infiniband/hw/mlx5/cq.c`) → firmware `CREATE_CQ` | `comp_vector` is turned into an EQ number by `mlx5_comp_eqn_get`, stored in the CQ context as `c_eqn_or_apu_element` |
+| EQ → vector | `create_map_eq` (`core/eq.c`) → firmware `CREATE_EQ` | `eqc.intr = vecidx`, a plain number. Also the EQ's DMA page addresses |
+| Vector → (address, data) | The **kernel PCI/MSI code**, not mlx5 | Writes entry `vecidx` of the NIC's MSI-X table. The values come from the interrupt controller driver (`irq_compose_msi_msg`) |
+| (address, data) → CPU | The **interrupt controller driver** (ITS, or APIC) | Programs its own tables so that this (address, data) means "CPU n" |
+| IRQ number → handler | `request_irq()` in `mlx5_irq_alloc` (`core/pci_irq.c`) | Linux IRQ number `virq` to `irq_int_handler`, plus CPU affinity |
 
-`comp_vector` is only a small number (0 to `num_comp_vectors - 1`). The application chooses it. That choice decides **which EQ, vector and CPU** will be woken for that CQ. Good RDMA apps spread CQs over vectors and pin their threads to match.
+So the chain stored in hardware is: **CQ 7 → EQ 3 → vector 5 → (address, data) → CPU 2**.
 
-**What the NIC does when a send finishes (the step by step)**
+**Step B: what happens at run time, one completion**
 
-1. The NIC finishes the WQE on the wire (for RC, after the ACK).
-2. It DMA-writes a **CQE** into the CQ ring in host memory.
-3. If the CQ is **armed** (the app called `ibv_req_notify_cq`, or the Ethernet driver re-armed it after NAPI), the NIC also DMA-writes an **EQE** (type COMP, carrying the CQ number) into the EQ ring. If the CQ is *not* armed (a polling app like NCCL or DPDK), this step and the next ones **do not happen**. The app just reads the CQE.
-4. The NIC does the **MSI-X write**: a PCIe Memory Write TLP to the *address* stored in its MSI-X table entry for this vector, with the *data* value from the same entry. This is an ordinary posted write on PCIe. The NIC does not know about CPUs or the GIC.
-5. The interrupt controller receives that write and turns it into an interrupt for one CPU (details below).
-6. The CPU runs the kernel interrupt entry and calls `irq_int_handler`, then `mlx5_eq_comp_int`: it reads EQEs, finds the CQ (`mlx5_eq_cq_get`), and calls `cq->comp()`.
-7. For Ethernet, `mlx5e_completion_event` calls `napi_schedule()`. For RDMA user space, `mlx5_ib_cq_comp` signals the completion channel, so a thread blocked in `ibv_get_cq_event` wakes up. The app then calls `ibv_poll_cq`.
+| Step | Who | What | Kind of write |
+| --- | --- | --- | --- |
+| 1 | NIC | Finishes a send. Writes a **CQE** into CQ 7 in RAM | DMA write |
+| 2 | NIC | Only if CQ 7 is **armed**: writes an **EQE** ("completion on CQ 7") into EQ 3 in RAM | DMA write |
+| 3 | NIC | Looks at the EQ's `intr` field = 5, reads MSI-X table entry 5, and sends a **4-byte write of `data` to `address`** | PCIe memory write (MSI-X) |
+| 4 | Interrupt controller | Receives that write and picks a CPU (see below) | hardware |
+| 5 | CPU 2 | Takes the interrupt, runs `irq_int_handler` → `mlx5_eq_comp_int` | software |
+| 6 | Driver | Reads EQ 3 (`next_eqe_sw`), sees "CQ 7", calls `cq->comp()` | RAM read |
+| 7 | Ethernet: `mlx5e_completion_event` → `napi_schedule`. RDMA: wake the thread waiting in `ibv_get_cq_event` | | |
+| 8 | App / NAPI | Reads the CQE from CQ 7 (`ibv_poll_cq`) | RAM read |
 
-**What the interrupt controller does with the write**
+**Why the order is safe.** Steps 2 and 3 travel on the same PCIe path as *posted writes*, and PCIe keeps posted writes in order. So when the CPU runs the handler, the EQE is already in RAM. The driver still checks the EQE's ownership bit and uses `dma_rmb()` before reading it, because the CPU side needs its own ordering guarantee.
 
-The address in step 4 is what makes the difference between platforms:
+**If the CQ is not armed** (NCCL, DPDK, any polling app): steps 2 to 7 never happen. The NIC writes the CQE, and the app reads it in a loop. There is no interrupt at all.
 
-| | ARM64 with GICv3 + ITS (BlueField, Grace, most Arm servers) | x86 (Intel / AMD) |
+**Step C: what the interrupt controller does with the write in step 3**
+
+*ARM64, GICv3 with ITS (BlueField, Grace, Arm servers). Illustrative numbers.*
+
+1. **Setup.** The kernel's ITS driver creates a "device" for the NIC with **DeviceID** = the PCIe address of the NIC (for example bus 03, device 00, function 0 gives `0x0300`). It reserves **EventIDs** 0, 1, 2, ... one per vector, and gives each an **LPI** number (a message-based interrupt ID, for example 8192 and up). It writes this into the ITS tables: *(DeviceID `0x0300`, EventID 5) → LPI 8197, collection 2* and *collection 2 → CPU 2's redistributor*.
+2. The ITS driver's function `its_irq_compose_msi_msg` fills the message for the NIC: **address = ITS base + `GITS_TRANSLATER`**, **data = EventID** (5). The PCI MSI code copies it into MSI-X table entry 5 of the NIC.
+3. **Run time.** The NIC does a PCIe write of the value 5 to the `GITS_TRANSLATER` address. The PCIe root complex sends it to the ITS. Along with the write, the PCIe hardware attaches the NIC's **requester ID**, which the ITS uses as the DeviceID.
+4. The ITS looks up (DeviceID `0x0300`, EventID 5), finds LPI 8197 and collection 2, and tells CPU 2's **redistributor** that LPI 8197 is pending.
+5. The redistributor signals the CPU interface. CPU 2 takes an IRQ exception. The kernel reads the interrupt ID from `ICC_IAR1_EL1` (gets 8197), looks up the Linux `virq`, calls the handler, and writes `ICC_EOIR1_EL1` when done.
+6. **Changing CPU** (`echo 4 > /proc/irq/N/smp_affinity_list`): the kernel sends the ITS a `MOVI` command to point (DeviceID, EventID) at another collection. **The NIC's MSI-X table is not touched.**
+
+*x86 (Intel / AMD)*
+
+1. **Setup.** The kernel's x86 vector code picks a CPU and a vector number (for example `0x41`). The message is: **address = `0xFEE00000` plus the target CPU's APIC ID in bits 12 and up**, **data = vector number**. The PCI MSI code writes it into MSI-X table entry 5.
+2. **Run time.** The NIC writes `0x41` to that address. The platform sends it to the local APIC of the CPU named in the address. With an IOMMU in interrupt-remapping mode, the message is a table index instead, and the IOMMU checks which device sent it before translating.
+3. The CPU runs the interrupt-descriptor-table entry for vector `0x41`, the kernel maps that to `virq`, and calls the handler.
+4. **Changing CPU:** the kernel **rewrites the NIC's MSI-X table entry** with a new address and vector. This is the opposite of ARM, where the NIC is untouched.
+
+| | ARM64 GICv3 + ITS | x86 |
 | --- | --- | --- |
-| Address the NIC writes to | The ITS register **`GITS_TRANSLATER`** (a memory-mapped register of the ITS block). The kernel sets it in `its_irq_compose_msi_msg` (`drivers/irqchip/irq-gic-v3-its.c`: address = `its->phys_base + GITS_TRANSLATER`) | The local APIC message address window, `0xFEExxxxx`. The destination CPU's **APIC ID** is encoded in the address bits |
-| Data the NIC writes | An **EventID** (`its_get_event_id`) | An interrupt **vector number** |
-| Who identifies the sender | The ITS uses the PCIe **DeviceID** (the NIC's bus/device/function, also called the requester ID or "stream ID") that arrives with the write | With an IOMMU interrupt remapping unit, the remapping table checks the sender and translates the message |
-| Translation | ITS looks up (DeviceID, EventID) in its **Device Table** and **Interrupt Translation Table (ITT)**, and finds an **LPI** number (a message-based interrupt) and a target **collection** (which maps to a CPU / redistributor) | Message gives CPU + vector directly (or via remapping table) |
-| Delivery | The ITS sends the LPI to the target CPU's **Redistributor**, which signals the CPU interface. The CPU takes an IRQ exception; the kernel reads the interrupt ID (`ICC_IAR1_EL1`), maps it to the Linux `virq`, calls the handler, and finishes with an end-of-interrupt write | The local APIC raises the vector on that CPU; the IDT entry runs; the kernel maps vector → `virq` |
-| Moving to another CPU (`smp_affinity`) | The kernel sends an ITS command (`MOVI` / `MOVC`) to retarget that (DeviceID, EventID) to another collection. **The NIC is not touched** | The kernel rewrites the MSI-X table entry (new address/data) in the NIC |
+| Address the NIC writes | `GITS_TRANSLATER` (one fixed address for all vectors) | `0xFEExxxxx` (changes with target CPU) |
+| Data the NIC writes | EventID | Vector number |
+| What picks the CPU | ITS tables (DeviceID + EventID → LPI → collection → CPU) | The address itself, or the IOMMU remapping table |
+| Moving to another CPU | ITS command (`MOVI`); NIC untouched | Rewrite the NIC's MSI-X entry |
+| How the device is identified | PCIe requester ID = DeviceID | Requester ID (checked only with IOMMU remapping) |
 
-The important points:
+**The NIC is the same on both.** It cannot tell ARM from x86: it only does "write this data to that address". Everything platform-specific is in step C, and mlx5 never touches it.
 
-- **The NIC only ever does a memory write.** It has no idea whether the CPU is x86 or ARM.
-- On ARM the NIC's MSI-X table keeps the same address (`GITS_TRANSLATER`) and a different *EventID* per vector. The ITS tables, programmed by the kernel, decide the CPU.
-- **The NIC's PCIe function and the ITS must agree on the DeviceID.** If a BlueField/ARM system, a VM, or an IOMMU setup gives a wrong DeviceID mapping, the interrupts never arrive. That looks like "traffic works, but completions never fire".
-- In a VM or with SR-IOV VFs, the hypervisor (and on ARM, the GICv4 direct injection feature) may sit in between. VFs have their own MSI-X table and their own DeviceID.
-
-**BlueField note.** A BlueField DPU has two worlds: the **host** (x86 or ARM) sees the DPU as a PCIe NIC with its own MSI-X table; the **DPU's own Arm cores** see the on-chip ConnectX as a device on their internal PCIe bus, so the same path runs there through the DPU's own GIC/ITS. Both run `mlx5_core`, each with its own EQs and vectors.
+**BlueField.** The DPU's Arm cores run their own `mlx5_core` for the on-chip ConnectX, using the DPU's own GIC/ITS. The host also sees the DPU as a PCIe NIC with its own MSI-X table and interrupt controller. Two separate interrupt paths exist on one card.
 
 **Where to look on a live machine**
 
 | Question | Command |
 | --- | --- |
-| Which vectors does the NIC have? | `lspci -vv -s <BDF> \| grep -i msi-x` |
+| How many vectors does the NIC offer? | `lspci -vv -s <BDF> \| grep -i msi-x` |
 | Which Linux IRQ is which queue? | `grep mlx5 /proc/interrupts` |
-| Where is it pinned? | `cat /proc/irq/<N>/smp_affinity_list`, `cat /proc/irq/<N>/effective_affinity_list` |
-| Which controller handles it? | `cat /proc/interrupts` (the column before the name shows `ITS-MSI` / `GICv3` on ARM, `PCI-MSIX` / `IR-PCI-MSIX` on x86). `ls /sys/kernel/irq/<N>/` and `cat /sys/kernel/irq/<N>/chip_name` also show it |
-| Is the NIC under an IOMMU? | `ls /sys/kernel/iommu_groups`, `dmesg \| grep -i -E 'iommu\|ITS\|GIC'` |
-| Which CQ uses which vector? | `rdma res show cq` (shows the CQ and its poll context); the verbs app chose `comp_vector` |
-| Are interrupts really firing? | Watch the counters: `watch -n1 'grep mlx5_comp /proc/interrupts'` while running a test |
+| Which interrupt controller handles it? | The chip column in `/proc/interrupts` (`ITS-MSI` or `ITS-PCI-MSIX` on ARM; `PCI-MSIX` or `IR-PCI-MSIX` on x86). Also `cat /sys/kernel/irq/<N>/chip_name` |
+| Which CPU, really? | `cat /proc/irq/<N>/smp_affinity_list` and `effective_affinity_list` |
+| Are interrupts firing? | `watch -n1 'grep mlx5_comp /proc/interrupts'` while running traffic |
+| Which CQ uses which vector? | The app's `comp_vector` in `ibv_create_cq`; Ethernet: one per channel |
 
-**Failure patterns (what you will hear)**
+**Failure patterns**
 
 | Report | Meaning |
 | --- | --- |
-| Completions never wake a sleeping app, but polling works | Interrupt path broken: MSI-X disabled, DeviceID/ITS or IOMMU issue, or the CQ was never armed |
-| All `mlx5_comp` interrupts land on CPU0 | `smp_affinity` wrong or `irqbalance` fighting the driver. Check `effective_affinity_list` |
-| Throughput drops on ARM, not on x86 | Often IRQ affinity vs NUMA, or ITS collection mapping, or cache-coherent DMA settings. Compare both |
-| `Failed to alloc IRQs` at probe | Not enough MSI-X vectors / LPIs available to this DeviceID |
-| Latency spikes with RDMA completion channels | Interrupt moderation or CPU idle states (waking a deep-sleep core is slow) |
+| Polling works, but sleeping on completions never wakes | Interrupt path broken: CQ not armed, MSI-X disabled, or ITS DeviceID / IOMMU mapping wrong |
+| All `mlx5_comp` counters grow on CPU0 only | Affinity: `irqbalance` or a wrong mask. Look at `effective_affinity_list` |
+| `Failed to alloc IRQs` at probe | Not enough MSI-X vectors or LPIs for this DeviceID |
+| Works on x86, slow on ARM | Compare IRQ-to-NUMA placement and cache-coherent DMA settings first |
 
-**Exercise**
+**Exercises**
 
-1. On any Linux machine, run `grep -E 'mlx5|PCI-MSI' /proc/interrupts | head`. Say which interrupt chip name appears and what it tells you about the platform.
-2. Read `its_irq_compose_msi_msg` (`git show HEAD:drivers/irqchip/irq-gic-v3-its.c` in your clone, since it is not in the sparse checkout). Answer: what two values does it fill in?
-3. In `drivers/infiniband/hw/mlx5/cq.c`, find where `comp_vector` becomes an `eqn`.
-4. Draw the chain CQ → EQ → vector → ITS/APIC → CPU from memory, with the memory write and the DMA writes marked in different colours.
+1. Run `grep -E 'mlx5|MSI' /proc/interrupts | head`. Which chip name shows, and what platform does it tell you?
+2. In `~/src/linux`, read `its_irq_compose_msi_msg` in `drivers/irqchip/irq-gic-v3-its.c`. Which two values does it fill in?
+3. In `drivers/infiniband/hw/mlx5/cq.c` find where `comp_vector` becomes an `eqn`. In `core/eq.c` find where `intr` is set.
+4. Draw the chain CQ → EQ → vector → (address, data) → ITS or APIC → CPU. Colour the DMA writes one colour and the MSI-X write another.
 
 ### 4.3 Send and receive in detail
 
