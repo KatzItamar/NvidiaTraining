@@ -484,6 +484,18 @@ Think of a post office: the **EQ is the mailbox** (the letter with the details),
                                          └──────────────────────┘                                 └──────────────┘
 ```
 
+**Common questions (read this first if the section feels dense)**
+
+| Question | Answer |
+| --- | --- |
+| What is an EQ, and why a ring for one interrupt? | An EQ is a ring in RAM where the NIC writes short "something happened" records. An interrupt carries no information, many events can happen before the handler runs, and one vector serves many CQs, so the EQ entry says what happened and which CQ |
+| Where is the MSI-X table? | Inside the NIC, in its own memory exposed through a PCIe BAR. The kernel writes the entries at setup. `lspci -vv` shows `Table: BAR=.. offset=..` |
+| What do CQ 7, EQ 3 and vector 5 mean? | Only IDs. `cqn` and `eqn` are handed out by firmware at `CREATE_CQ` / `CREATE_EQ`. The vector index is chosen by the driver. EQ 3 is tied to vector 5 only by the field `intr = 5` set in `CREATE_EQ` |
+| Same word, two meanings | "MSI-X vector" = an entry in the NIC's table. "x86 interrupt vector" = a CPU-side number. They are different things |
+| Is the CQ used for TX and RX? | Yes. TX CQE: "that send is done". RX CQE: "the NIC has already DMA-written a packet into your buffer, N bytes". The CPU copies nothing from the hardware |
+| Are there separate RX and TX interrupts? | No. In mlx5 Ethernet, one channel's TX and RX CQs share one EQ and one vector, and NAPI polls both |
+| Why does the interrupt need a PCIe address? | The NIC is a separate chip that can only read and write addresses. The interrupt controller has registers at physical addresses, and a write there acts as a doorbell. Software stores the (address, data) pair in the MSI-X table at setup |
+
 **Step A: how the three are linked (setup, once, at probe or when queues are created)**
 
 | Link | Who does it | What is written |
