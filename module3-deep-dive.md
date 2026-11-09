@@ -187,6 +187,8 @@ Each flow below is one row per layer, from top to bottom. The **API** column is 
 
 Firmware is used only in "configure". Every packet goes through the kernel.
 
+For the same send and receive flows drawn end to end (PHY, MAC, NIC queues, PCIe, the interrupt, NAPI), see [A day in the life of a packet](packet-life.md).
+
 ### 3.2 Door 2: DPDK (example: a firewall)
 
 **Configure:**

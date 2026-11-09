@@ -1,0 +1,329 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1470" width="1440" height="1470" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="ah-rx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f6fd1"/></marker>
+<marker id="ah-tx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d9822b"/></marker>
+<marker id="ah-irq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1343a"/></marker>
+<marker id="ah-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+</defs>
+<rect width="1440" height="1470" fill="#ffffff"/>
+<text x="20" y="40" font-size="22" font-weight="700" fill="#1d1d1f" text-anchor="start" >A day in the life of a packet: receive (RX) and send (TX) on a ConnectX NIC with the mlx5 driver</text>
+<text x="20" y="64" font-size="13.5" font-weight="normal" fill="#55555a" text-anchor="start" >RX (blue) climbs from the cable to the app. TX (orange) goes down from the app to the cable. Interrupts are red and dashed. Step numbers match the text.</text>
+<rect x="10" y="80" width="1420" height="90" rx="14" fill="#f1f1ef"/>
+<text x="26" y="106" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" >User space</text>
+<text x="26" y="126" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >the application</text>
+<rect x="10" y="180" width="1420" height="340" rx="14" fill="#eef3fb"/>
+<text x="26" y="206" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" >Linux kernel</text>
+<text x="26" y="226" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >runs on a CPU core</text>
+<text x="26" y="242" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" ></text>
+<text x="26" y="258" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >mlx5_core (mlx5e)</text>
+<text x="26" y="274" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >+ net stack</text>
+<rect x="10" y="530" width="1420" height="170" rx="14" fill="#f1f1ef"/>
+<text x="26" y="556" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" >Host memory</text>
+<text x="26" y="576" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >DRAM, shared by</text>
+<text x="26" y="592" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >CPU and NIC</text>
+<text x="26" y="608" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" ></text>
+<text x="26" y="624" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >rings live here</text>
+<rect x="10" y="710" width="1420" height="60" rx="14" fill="#fbf1e6"/>
+<text x="26" y="736" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" >PCIe</text>
+<text x="26" y="756" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >each arrow across it</text>
+<text x="26" y="772" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >is a PCIe transfer</text>
+<rect x="10" y="780" width="1420" height="440" rx="14" fill="#eaeae6"/>
+<text x="26" y="806" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" >NIC</text>
+<text x="26" y="826" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >ConnectX</text>
+<text x="26" y="842" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" ></text>
+<text x="26" y="858" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >hardware does</text>
+<text x="26" y="874" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >every step here</text>
+<text x="26" y="890" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >with no CPU help</text>
+<rect x="10" y="1230" width="1420" height="70" rx="14" fill="#f1f1ef"/>
+<text x="26" y="1256" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" >Cable</text>
+<text x="26" y="1276" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >port + wire</text>
+<text x="395.0" y="100" font-size="13" font-weight="700" fill="#1f6fd1" text-anchor="middle" >RECEIVE (RX)</text>
+<text x="1185.0" y="100" font-size="13" font-weight="700" fill="#d9822b" text-anchor="middle" >SEND (TX)</text>
+<text x="790.0" y="100" font-size="13" font-weight="700" fill="#d1343a" text-anchor="middle" >SHARED BY RX AND TX</text>
+<rect x="190" y="110" width="410" height="50" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="395.0" y="132.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >App: recv() returns the data</text>
+<text x="395.0" y="148.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >copied from the socket into the app's memory</text>
+<rect x="980" y="110" width="410" height="50" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1185.0" y="132.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >App: send(data)</text>
+<text x="1185.0" y="148.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >system call into the kernel</text>
+<rect x="190" y="195" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="395.0" y="217.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >TCP/IP stack</text>
+<text x="395.0" y="233.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >checks IP + TCP, finds the socket,</text>
+<text x="395.0" y="249.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >queues the data, wakes the app</text>
+<rect x="190" y="285" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="395.0" y="307.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >NAPI RX poll: mlx5e_poll_rx_cq</text>
+<text x="395.0" y="323.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >reads each CQE, wraps the buffer as an skb</text>
+<text x="395.0" y="339.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >(no copy), runs XDP if loaded, then GRO</text>
+<rect x="190" y="380" width="240" height="120" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="310.0" y="407.25" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" >Refill + re-arm</text>
+<text x="310.0" y="423.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >mlx5e_post_rx_wqes:</text>
+<text x="310.0" y="439.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >put fresh empty buffers</text>
+<text x="310.0" y="455.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >back in the RQ;</text>
+<text x="310.0" y="471.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >then re-arm the CQ so the</text>
+<text x="310.0" y="487.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >next packet interrupts</text>
+<rect x="630" y="195" width="320" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="790.0" y="217.25" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" >TX completion: mlx5e_poll_tx_cq</text>
+<text x="790.0" y="233.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >reads TX CQEs: DMA-unmap,</text>
+<text x="790.0" y="249.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >free the skb, wake the queue</text>
+<rect x="630" y="285" width="320" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="790.0" y="307.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >NAPI poll (softirq)</text>
+<text x="790.0" y="323.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >mlx5e_napi_poll, same core:</text>
+<text x="790.0" y="339.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >polls the TX and RX CQs (budget 64)</text>
+<rect x="630" y="380" width="320" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="790.0" y="402.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >Hard IRQ handler</text>
+<text x="790.0" y="418.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >mlx5_eq_comp_int: just calls</text>
+<text x="790.0" y="434.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >napi_schedule(), returns fast</text>
+<text x="790.0" y="470" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >one channel = one core = one</text>
+<text x="790.0" y="485" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >IRQ, one NAPI, one RQ + its SQs</text>
+<rect x="980" y="195" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1185.0" y="217.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >TCP/IP stack + qdisc</text>
+<text x="1185.0" y="233.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >builds the skb and headers, the qdisc</text>
+<text x="1185.0" y="249.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >and XPS pick a send queue (SQ)</text>
+<rect x="980" y="285" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1185.0" y="307.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >Driver: mlx5e_xmit</text>
+<text x="1185.0" y="323.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >DMA-maps the data, writes a WQE</text>
+<text x="1185.0" y="339.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >(addresses + offload flags) into the SQ</text>
+<rect x="1170" y="380" width="220" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1280.0" y="402.25" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" >Ring the doorbell</text>
+<text x="1280.0" y="418.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >MMIO write to the NIC's</text>
+<text x="1280.0" y="434.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >doorbell register (UAR)</text>
+<rect x="190" y="550" width="140" height="135" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="260.0" y="622.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" ></text>
+<text x="260.0" y="572" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" >RQ</text>
+<rect x="202.0" y="584" width="15.3" height="22" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="221.3" y="584" width="15.3" height="22" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="240.7" y="584" width="15.3" height="22" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="260.0" y="584" width="15.3" height="22" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="279.3" y="584" width="15.3" height="22" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="298.7" y="584" width="15.3" height="22" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="260.0" y="626" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >receive queue:</text>
+<text x="260.0" y="641" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >WQEs that point to</text>
+<text x="260.0" y="656" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >empty buffers</text>
+<rect x="340" y="550" width="125" height="135" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="402.5" y="592.25" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" >Buffers</text>
+<text x="402.5" y="608.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >empty pages the</text>
+<text x="402.5" y="624.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >driver posted</text>
+<text x="402.5" y="640.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >(page pool);</text>
+<text x="402.5" y="656.25" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >the NIC fills them</text>
+<rect x="475" y="550" width="125" height="135" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="537.5" y="622.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" ></text>
+<text x="537.5" y="572" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" >RX CQ</text>
+<rect x="487.0" y="584" width="12.8" height="22" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="503.8" y="584" width="12.8" height="22" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="520.7" y="584" width="12.8" height="22" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="537.5" y="584" width="12.8" height="22" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="554.3" y="584" width="12.8" height="22" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="571.2" y="584" width="12.8" height="22" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="537.5" y="626" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >completion queue:</text>
+<text x="537.5" y="641" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >one CQE per</text>
+<text x="537.5" y="656" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >packet received</text>
+<rect x="630" y="550" width="170" height="135" rx="9" fill="#ffffff" stroke="#d1343a" stroke-width="1.6"/>
+<text x="715.0" y="622.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" ></text>
+<text x="715.0" y="572" font-size="13.5" font-weight="700" fill="#d1343a" text-anchor="middle" >EQ</text>
+<rect x="642.0" y="584" width="20.3" height="22" rx="3" fill="#d1343a" fill-opacity="0.35" stroke="#d1343a" stroke-width="1"/>
+<rect x="666.3" y="584" width="20.3" height="22" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<rect x="690.7" y="584" width="20.3" height="22" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<rect x="715.0" y="584" width="20.3" height="22" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<rect x="739.3" y="584" width="20.3" height="22" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<rect x="763.7" y="584" width="20.3" height="22" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<text x="715.0" y="626" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >event queue:</text>
+<text x="715.0" y="641" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >“CQ n has new</text>
+<text x="715.0" y="656" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >CQEs”</text>
+<rect x="980" y="550" width="115" height="135" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="1037.5" y="622.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" ></text>
+<text x="1037.5" y="572" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" >TX CQ</text>
+<rect x="992.0" y="584" width="11.2" height="22" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1007.2" y="584" width="11.2" height="22" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1022.3" y="584" width="11.2" height="22" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1037.5" y="584" width="11.2" height="22" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1052.7" y="584" width="11.2" height="22" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1067.8" y="584" width="11.2" height="22" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="1037.5" y="626" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >one CQE per</text>
+<text x="1037.5" y="641" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >batch of WQEs</text>
+<text x="1037.5" y="656" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >sent</text>
+<rect x="1105" y="550" width="120" height="135" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="1165.0" y="622.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" ></text>
+<text x="1165.0" y="572" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" >SQ</text>
+<rect x="1117.0" y="584" width="12.0" height="22" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1133.0" y="584" width="12.0" height="22" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1149.0" y="584" width="12.0" height="22" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1165.0" y="584" width="12.0" height="22" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1181.0" y="584" width="12.0" height="22" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1197.0" y="584" width="12.0" height="22" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="1165.0" y="626" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >send queue:</text>
+<text x="1165.0" y="641" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >WQEs that point</text>
+<text x="1165.0" y="656" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" >to packet data</text>
+<rect x="1235" y="550" width="100" height="135" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="1285.0" y="599.75" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" >Data</text>
+<text x="1285.0" y="615.75" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >the skb's</text>
+<text x="1285.0" y="631.75" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >bytes,</text>
+<text x="1285.0" y="647.75" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >DMA-mapped</text>
+<path d="M330,610 L338,610" fill="none" stroke="#1f6fd1" stroke-width="1.6" marker-end="url(#ah-rx)"/>
+<path d="M1225,610 L1233,610" fill="none" stroke="#d9822b" stroke-width="1.6" marker-end="url(#ah-tx)"/>
+<rect x="190" y="795" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="395.0" y="817.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >RX DMA engine</text>
+<text x="395.0" y="833.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >takes the next RQ WQE, writes the packet into</text>
+<text x="395.0" y="849.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >that buffer, then writes a CQE</text>
+<rect x="630" y="795" width="320" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="790.0" y="817.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >Event + interrupt unit</text>
+<text x="790.0" y="833.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >if the CQ is armed: write an EQE,</text>
+<text x="790.0" y="849.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >then send an MSI-X interrupt</text>
+<rect x="980" y="795" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1185.0" y="817.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >TX DMA engine</text>
+<text x="1185.0" y="833.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >reads the WQE, then the packet data,</text>
+<text x="1185.0" y="849.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >later writes a CQE</text>
+<rect x="190" y="880" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="395.0" y="902.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >RX packet pipeline</text>
+<text x="395.0" y="918.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >parse headers, steering (flow tables + RSS hash)</text>
+<text x="395.0" y="934.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >picks the RQ, checks checksums, strips VLAN</text>
+<rect x="630" y="880" width="320" height="145" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="790.0" y="920.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >Firmware</text>
+<text x="790.0" y="936.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >runs setup commands from</text>
+<text x="790.0" y="952.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >the driver: create rings,</text>
+<text x="790.0" y="968.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >steering rules, MTU, link.</text>
+<text x="790.0" y="984.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" ></text>
+<text x="790.0" y="1000.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >Not on the per-packet path.</text>
+<rect x="980" y="880" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1185.0" y="902.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >TX packet pipeline</text>
+<text x="1185.0" y="918.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >calculates checksums, TSO cuts big sends</text>
+<text x="1185.0" y="934.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >into MTU-size packets, inserts VLAN</text>
+<rect x="190" y="960" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="395.0" y="982.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >RX buffer (on-chip)</text>
+<text x="395.0" y="998.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >holds packets until the pipeline takes them;</text>
+<text x="395.0" y="1014.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >if full: pause / PFC, or drop</text>
+<rect x="980" y="960" width="410" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1185.0" y="982.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >TX scheduler</text>
+<text x="1185.0" y="998.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >picks which SQ sends next:</text>
+<text x="1185.0" y="1014.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" >QoS, rate limits, pause frames</text>
+<rect x="190" y="1040" width="1200" height="65" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="790.0" y="1077.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >MAC</text>
+<text x="234" y="1068" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >RX: find the frame, check the FCS (CRC),</text>
+<text x="234" y="1084" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >check the destination MAC, count</text>
+<text x="1346" y="1068" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" >TX: add the preamble and the</text>
+<text x="1346" y="1084" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" >FCS (CRC), respect the gap</text>
+<rect x="190" y="1120" width="1200" height="80" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="790.0" y="1165.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" >PHY + SerDes</text>
+<text x="234" y="1152" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >RX: recover the clock, turn the signal into bits,</text>
+<text x="234" y="1168" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >decode, correct errors (FEC)</text>
+<text x="1346" y="1152" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" >TX: encode, add FEC, turn bits</text>
+<text x="1346" y="1168" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" >into an electrical or optical signal</text>
+<rect x="190" y="1240" width="1200" height="50" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="790.0" y="1269.75" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" >Port: RJ45 (copper BASE-T) or QSFP / OSFP cage (DAC / optical)</text>
+<path d="M300,1330 L300,1292" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<text x="300" y="1352" font-size="12" font-weight="600" fill="#1f6fd1" text-anchor="middle" >bits arrive</text>
+<path d="M300,1238 L300,1202" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M300,1118 L300,1107" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M300,1038 L300,1027" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M300,958 L300,947" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M300,878 L300,862" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<circle cx="270" cy="1315" r="14" fill="#1f6fd1"/>
+<text x="270" y="1319.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R1</text>
+<circle cx="210" cy="1160" r="14" fill="#1f6fd1"/>
+<text x="210" y="1164.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R2</text>
+<circle cx="210" cy="1072" r="14" fill="#1f6fd1"/>
+<text x="210" y="1076.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R3</text>
+<circle cx="210" cy="992" r="14" fill="#1f6fd1"/>
+<text x="210" y="996.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R4</text>
+<circle cx="210" cy="912" r="14" fill="#1f6fd1"/>
+<text x="210" y="916.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R5</text>
+<path d="M260,793 L260,687" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-rx)"/>
+<text x="266" y="735" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read WQE</text>
+<path d="M402,793 L402,687" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<text x="408" y="735" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write packet</text>
+<path d="M540,793 L540,687" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<text x="546" y="735" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<circle cx="210" cy="827" r="14" fill="#1f6fd1"/>
+<text x="210" y="831.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R6</text>
+<circle cx="560" cy="822" r="14" fill="#1f6fd1"/>
+<text x="560" y="826.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R7</text>
+<path d="M600,840 L628,840" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-rx)"/>
+<path d="M715,793 L715,687" fill="none" stroke="#d1343a" stroke-width="2.2" marker-end="url(#ah-irq)"/>
+<text x="721" y="735" font-size="11.5" font-weight="600" fill="#d1343a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write EQE</text>
+<path d="M880,793 L880,447" fill="none" stroke="#d1343a" stroke-width="2.6" stroke-dasharray="7 5" marker-end="url(#ah-irq)"/>
+<text x="886" y="735" font-size="11.5" font-weight="600" fill="#d1343a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">MSI-X</text>
+<text x="886" y="640" font-size="11.5" font-weight="600" fill="#d1343a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">interrupt</text>
+<circle cx="652" cy="827" r="14" fill="#d1343a"/>
+<text x="652" y="831.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R8</text>
+<path d="M790,378 L790,352" fill="none" stroke="#d1343a" stroke-width="2.2" marker-end="url(#ah-irq)"/>
+<circle cx="650" cy="412" r="14" fill="#d1343a"/>
+<text x="650" y="416.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R9</text>
+<circle cx="650" cy="317" r="14" fill="#d1343a"/>
+<text x="650" y="321.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R10</text>
+<path d="M630,317 L602,317" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M540,548 L540,352" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-rx)"/>
+<text x="546" y="380" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read CQE</text>
+<text x="546" y="395" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">+ data</text>
+<circle cx="212" cy="317" r="14" fill="#1f6fd1"/>
+<text x="212" y="321.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R11</text>
+<path d="M395.0,283 L395.0,262" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<circle cx="212" cy="227" r="14" fill="#1f6fd1"/>
+<text x="212" y="231.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R12</text>
+<path d="M395.0,193 L395.0,162" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<circle cx="212" cy="135" r="14" fill="#1f6fd1"/>
+<text x="212" y="139.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R13</text>
+<path d="M300,352 L300,378" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-rx)"/>
+<path d="M260,502 L260,548" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-rx)"/>
+<text x="266" y="528" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">new WQEs</text>
+<circle cx="210" cy="440" r="14" fill="#1f6fd1"/>
+<text x="210" y="444.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >R14</text>
+<path d="M430,490 L612,490 L612,772 L670,772 L670,793" fill="none" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#ah-gray)"/>
+<text x="436" y="484" font-size="11.5" font-weight="600" fill="#8a8a8a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">arm CQ</text>
+<path d="M1185.0,162 L1185.0,193" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<circle cx="1368" cy="135" r="14" fill="#d9822b"/>
+<text x="1368" y="139.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T1</text>
+<circle cx="1368" cy="227" r="14" fill="#d9822b"/>
+<text x="1368" y="231.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T2</text>
+<path d="M1185.0,262 L1185.0,283" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<circle cx="1368" cy="317" r="14" fill="#d9822b"/>
+<text x="1368" y="321.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T3</text>
+<path d="M1140,352 L1140,548" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="1080" y="470" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write WQE</text>
+<path d="M1300,352 L1300,378" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<circle cx="1368" cy="412" r="14" fill="#d9822b"/>
+<text x="1368" y="416.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T4</text>
+<path d="M1362,447 L1362,793" fill="none" stroke="#d9822b" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#ah-tx)"/>
+<text x="1356" y="740" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">MMIO</text>
+<text x="1356" y="755" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">doorbell</text>
+<path d="M1165,793 L1165,687" fill="none" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-tx)"/>
+<text x="1171" y="735" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read WQE</text>
+<path d="M1285,687 L1285,793" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="1291" y="712" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read</text>
+<text x="1291" y="727" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">data</text>
+<path d="M1037,793 L1037,687" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="1043" y="735" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<circle cx="1368" cy="827" r="14" fill="#d9822b"/>
+<text x="1368" y="831.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T5</text>
+<path d="M1300,862 L1300,878" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<circle cx="1368" cy="912" r="14" fill="#d9822b"/>
+<text x="1368" y="916.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T6</text>
+<path d="M1300,947 L1300,958" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<circle cx="1368" cy="992" r="14" fill="#d9822b"/>
+<text x="1368" y="996.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T7</text>
+<path d="M1300,1027 L1300,1038" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<circle cx="1370" cy="1072" r="14" fill="#d9822b"/>
+<text x="1370" y="1076.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T8</text>
+<path d="M1300,1107 L1300,1118" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<circle cx="1370" cy="1160" r="14" fill="#d9822b"/>
+<text x="1370" y="1164.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T9</text>
+<path d="M1300,1202 L1300,1238" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<path d="M1300,1292 L1300,1330" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="1300" y="1352" font-size="12" font-weight="600" fill="#d9822b" text-anchor="middle" >bits leave</text>
+<path d="M980,840 L952,840" fill="none" stroke="#d9822b" stroke-width="1.8" marker-end="url(#ah-tx)"/>
+<circle cx="928" cy="827" r="14" fill="#d9822b"/>
+<text x="928" y="831.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T10</text>
+<path d="M840,283 L840,262" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<circle cx="928" cy="227" r="14" fill="#d9822b"/>
+<text x="928" y="231.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" >T11</text>
+<rect x="10" y="1373" width="1420" height="80" rx="12" fill="#f7f7f5"/>
+<path d="M30,1399 L76,1399" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<text x="86" y="1403" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" >RX data path</text>
+<path d="M230,1399 L276,1399" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="286" y="1403" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" >TX data path</text>
+<path d="M430,1399 L476,1399" fill="none" stroke="#d1343a" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-irq)"/>
+<text x="486" y="1403" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" >interrupt (MSI-X)</text>
+<path d="M650,1399 L696,1399" fill="none" stroke="#1f6fd1" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-rx)"/>
+<text x="706" y="1403" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" >read (dashed) = DMA read or CPU read</text>
+<path d="M1020,1399 L1066,1399" fill="none" stroke="#8a8a8a" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-gray)"/>
+<text x="1076" y="1403" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" >arm CQ: “interrupt me next time”</text>
+<text x="30" y="1435" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" >WQE = work queue entry (a descriptor: “here is a buffer”).  CQE = completion queue entry (“done: this many bytes, checksum OK, RSS hash ...”).  EQE = event queue entry.  skb = the kernel's packet object.</text>
+</svg>
