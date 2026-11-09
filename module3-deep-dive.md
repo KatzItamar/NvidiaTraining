@@ -475,6 +475,49 @@ probe_one ─► mlx5_pci_init ──► DMA allowed (bus master, 64-bit mask)
 3. Find `mlx5_register_device` and follow it to `mlx5_adev_devices[]` in `dev.c`. List the protocol suffixes.
 4. Find `mlx5r_probe` in `drivers/infiniband/hw/mlx5/main.c` and the call to `ib_register_device`.
 
+### 4.2a1 Driver matching: how the kernel finds `probe_one`, and later `mlx5_ib`
+
+**The idea.** A driver declares what it handles in an **ID table**. A **bus** (PCI, auxiliary) keeps a list of devices and a list of drivers. When either side is added, the bus compares them. A match calls the driver's `probe()`. For mlx5 this happens twice: once on the PCI bus (`mlx5_core`), and once on the auxiliary bus (`mlx5_ib` and the Ethernet driver).
+
+**Round 1: the PCI bus matches `mlx5_core`**
+
+| Step | What happens | Where |
+| --- | --- | --- |
+| 1 | The driver declares its IDs. `mlx5_core_pci_table[]` lists vendor/device pairs, for example `PCI_VDEVICE(MELLANOX, 0x1017)` for ConnectX-5. VFs have their own ID with `.driver_data = MLX5_PCI_DEV_IS_VF`. `MODULE_DEVICE_TABLE(pci, ...)` copies the table into the `.ko`. `struct pci_driver mlx5_core_driver` points to it with `.id_table` and to `probe_one` with `.probe` | `core/main.c` |
+| 2 | The kernel discovers the device at boot or hotplug and creates a `pci_dev` with vendor ID, device ID, subsystem IDs and class, read from PCI config space | PCI core |
+| 3 | udev sees the device. Its event carries a **modalias** like `pci:v000015B3d00001017sv...`. udev runs `modprobe`, which looks the string up in `modules.alias` (built from `MODULE_DEVICE_TABLE`) and loads `mlx5_core.ko` | user space. Check with `cat /sys/bus/pci/devices/<BDF>/modalias` and `modinfo mlx5_core \| grep alias` |
+| 4 | The module's init calls `pci_register_driver`. The driver core (`driver_attach`) asks the bus about every device already present | `drivers/base/dd.c` |
+| 5 | `pci_bus_match` → `pci_match_device` walks `id_table` and compares vendor, device, subvendor, subdevice and class. `PCI_ANY_ID` matches anything. IDs can also be added by hand in `/sys/bus/pci/drivers/<name>/new_id` | `drivers/pci/pci-driver.c` |
+| 6 | On a match, `pci_device_probe` → `pci_call_probe` calls `probe_one(pdev, id)`. The `id` is the table entry that matched, which is how `probe_one` reads `driver_data` and learns that it is a VF | `pci-driver.c`, `core/main.c` |
+| 7 | If `probe_one` returns 0 the device is **bound**: `/sys/bus/pci/devices/<BDF>/driver` exists. If it returns an error, the device stays unbound and the error is in `dmesg` | |
+
+**Round 2: the auxiliary bus matches `mlx5_ib`.** Same pattern, but the devices are made by software and the "ID" is a **name string**.
+
+| Step | What happens | Where |
+| --- | --- | --- |
+| 1 | `mlx5_core` creates the device in `add_adev`: `adev->name = "rdma"` (the suffix from `mlx5_adev_devices[]`), `adev->id = dev->priv.adev_idx` (reserved in `probe_one`), `adev->dev.parent` = the PCI device. Then `auxiliary_device_init` and `auxiliary_device_add` | `core/dev.c` |
+| 2 | The kernel names it `modname.name.id`, for example `mlx5_core.rdma.0` (and `mlx5_core.eth.0` for Ethernet). See them in `/sys/bus/auxiliary/devices/` | `drivers/base/auxiliary.c` (`__auxiliary_device_add`) |
+| 3 | `mlx5_ib` declares `mlx5r_id_table[] = { .name = MLX5_ADEV_NAME ".rdma" }`, which is the string `"mlx5_core.rdma"`. `struct auxiliary_driver mlx5r_driver` points to it and to `.probe = mlx5r_probe`. `MODULE_DEVICE_TABLE(auxiliary, ...)` lets udev autoload `mlx5_ib` from the modalias `auxiliary:mlx5_core.rdma` | `infiniband/hw/mlx5/main.c` |
+| 4 | `auxiliary_match_id` takes the device name `mlx5_core.rdma.0`, cuts it at the **last dot** (`mlx5_core.rdma`) and compares it with each `id_table` name. The trailing instance number is ignored, so one driver serves many devices (two NICs give `.0` and `.1`) | `drivers/base/auxiliary.c` |
+| 5 | `mlx5r_probe(adev, id)` runs, finds its parent `mlx5_core_dev`, and goes on to `ib_register_device` | `infiniband/hw/mlx5/main.c` |
+
+**Both load orders work.** If `mlx5_ib` loads first, its driver waits on the auxiliary bus and binds when `mlx5_core` adds `mlx5_core.rdma.0`. If `mlx5_ib` loads later, `driver_attach` goes over the existing auxiliary devices and binds it. On unload the order is reversed: `remove_one` → `mlx5_uninit_one` removes the auxiliary devices, and the bus calls each auxiliary driver's `.remove`.
+
+**When matching fails**
+
+| Symptom | Check |
+| --- | --- |
+| Driver does not claim a new card | Is the device ID in `mlx5_core_pci_table`? (`lspci -nn`). A new card needs a new table entry. This is a common small upstream patch |
+| Module exists but does not load | `cat /sys/bus/pci/devices/<BDF>/modalias`, then `modprobe -v <alias>`; run `depmod -a` |
+| Device present, no driver | `lspci -k` ("Kernel driver in use"), `ls /sys/bus/pci/devices/<BDF>/driver`, `dmesg \| grep mlx5` |
+| `ip link` works, `ibv_devices` is empty | Round 1 worked, round 2 did not: `ls /sys/bus/auxiliary/devices/`, `lsmod \| grep mlx5_ib`, and whether `mlx5_rdma_supported` / `is_ib_enabled` said no (device capabilities, devlink params) |
+
+**Exercise**
+
+1. `lspci -nn | grep -i mellanox`, then find that ID in `mlx5_core_pci_table`.
+2. `ls /sys/bus/auxiliary/devices/` and `modinfo mlx5_ib | grep alias`.
+3. Read `auxiliary_match_id` (`git show HEAD:drivers/base/auxiliary.c` in `~/src/linux`; it is not in the sparse checkout unless you add `drivers/base`).
+
 ### 4.2b MSI-X: how the NIC interrupts the CPU
 
 **What it is.** The NIC must tell the CPU "something happened" (a packet arrived, a send finished, the link went down). It does this with an **interrupt**. MSI-X is the PCIe way: the NIC does not use a wire. It does an ordinary **memory write** to a special address, and the CPU's interrupt controller turns that write into an interrupt. One device can have **many vectors** (a vector is one numbered interrupt, with its own address and data value). This is why a modern NIC can spread work over many CPU cores: **one vector per CPU core's queue**.
@@ -866,3 +909,6 @@ You're done when you can answer without notes:
 17. Why do the error labels in `probe_one` run in reverse order of the init calls?
 18. Where is DMA allowed (which call), where does the first DMA buffer appear, and where do MSI-X vectors get set up?
 19. Which module creates the RDMA interface, and what is the link between `mlx5_core` and it?
+20. Name the two bus matches in the mlx5 load sequence, and what is compared in each.
+21. Why does the auxiliary match ignore the number at the end of `mlx5_core.rdma.0`?
+22. A new ConnectX model is shown by `lspci` but no driver claims it. What do you check first, and which file would the fix patch touch?
