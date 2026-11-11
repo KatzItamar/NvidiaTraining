@@ -173,7 +173,7 @@ Each mlx5 piece is built in its upstream project first. DOCA-Host bundles the us
 - Upstream release dates are not under NVIDIA's control. A feature that misses a kernel merge window waits about 9 to 10 weeks for the next one.
 - "Upstream first" lowers long-term maintenance cost. A patch that lives only in DOCA-Host must be carried and rebased forever.
 
-**Go deeper:** use cases, how an NVIDIA NIC and RDMA work, end-to-end configure/send/receive flows with the API at each layer, and a code-level deep dive are in [Module 3 deep dive](module3-deep-dive.md). For one packet followed step by step from the cable, through the NIC, PCIe and the interrupt, to the app and back, see [A day in the life of a packet](packet-life.md). The same is drawn for [DPDK](packet-dpdk.md) and for [an RDMA WRITE in NCCL](packet-rdma-nccl.md).
+**Go deeper:** use cases, how an NVIDIA NIC and RDMA work, end-to-end configure/send/receive flows with the API at each layer, and a code-level deep dive are in [Module 3 deep dive](module3-deep-dive.md). For one packet followed step by step from the cable, through the NIC, PCIe and the interrupt, to the app and back, see [A day in the life of a packet](packet-life.md). The same is drawn for [DPDK](packet-dpdk.md) and for [an RDMA WRITE in NCCL](packet-rdma-nccl.md). For the setup side (how each path's queues, memory keys and rules are created, down to the firmware command), see [Configuration flows](config-flows.md).
 
 ## Module 4: mlx5 upstream: clone, read, and ask for changes
 

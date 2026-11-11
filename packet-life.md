@@ -13,7 +13,7 @@ This is the **kernel sockets** path (door 1 in the [Module 3 deep dive](module3-
 - **Numbered circles** are steps. `R1` to `R14` are receive, `T1` to `T11` are send. The tables below explain each one.
 - **Solid arrows** move packet data. **Dashed arrows** are reads (the NIC or the CPU fetching something). The **red dashed arrow** is the interrupt.
 
-**Want to dive deeper?** [Find it in the code](packet-life-code.md) has the same drawing with the main kernel functions for every box.
+**Want to dive deeper?** [Find it in the code](packet-life-code.md) has the same drawing with the main kernel functions for every box. **How the queues get created in the first place:** [Configuring a Linux NIC](config-linux-nic.md).
 
 ---
 

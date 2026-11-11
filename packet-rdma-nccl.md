@@ -17,7 +17,7 @@ It's the companion to [A day in the life of a packet](packet-life.md) (the kerne
 - **Numbered circles** are the steps, **1 to 16, in time order**. Step 1 is on the receiver: B tells A where to write before A sends anything.
 - **Arrow colours:** orange = A's data going out, blue = data arriving at B, purple = the ACK and A's completion, green dashed = the "clear to send" message (CTS), grey dashed = setup.
 
-**Want to dive deeper?** [Find it in the code](packet-rdma-nccl-code.md) has the same drawing with the main NCCL, rdma-core and kernel functions for every box.
+**Want to dive deeper?** [Find it in the code](packet-rdma-nccl-code.md) has the same drawing with the main NCCL, rdma-core and kernel functions for every box. **How the PD, MR, CQ and QP get created in the first place:** [Configuring RDMA for NCCL](config-rdma-nccl.md).
 
 ---
 

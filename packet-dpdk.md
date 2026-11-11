@@ -13,7 +13,7 @@ It is the companion to [A day in the life of a packet](packet-life.md), which sh
 - **Numbered circles** are steps. `R1` to `R10` are receive, `T1` to `T10` are send. The tables below explain each one.
 - **Solid arrows** move packet data. **Dashed arrows** are reads: the NIC fetching a descriptor, or the app **polling** a completion queue. **Grey dashed arrows** happen once, at setup.
 
-**Want to dive deeper?** [Find it in the code](packet-dpdk-code.md) has the same drawing with the main DPDK functions for every box.
+**Want to dive deeper?** [Find it in the code](packet-dpdk-code.md) has the same drawing with the main DPDK functions for every box. **How the queues and flow rules get created in the first place:** [Configuring DPDK on mlx5](config-dpdk.md).
 
 ---
 

@@ -1,0 +1,361 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1790 1651" width="1790" height="1651" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="ah-1f6fd1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f6fd1"/></marker>
+<marker id="ah-1d1d1f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d1d1f"/></marker>
+<marker id="ah-d1343a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1343a"/></marker>
+<marker id="ah-8a8a8a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+<marker id="ah-6b6b70" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6b6b70"/></marker>
+</defs>
+<rect width="1790" height="1651" fill="#ffffff"/>
+<text x="20.0" y="40.0" font-size="22" font-weight="700" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Configuring RDMA for NCCL, with the code: from NCCL to the firmware</text>
+<text x="20.0" y="64.0" font-size="13.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">The five setup steps NCCL runs when training starts, one per column. Follow a column down through the layers; each ends in a firmware command sent through the shared path at the bottom.</text>
+<rect x="10" y="90" width="1770" height="86" rx="14" fill="#f7f7f5"/>
+<text x="26.0" y="116.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Configuration</text>
+<text x="26.0" y="136.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">what the user or</text>
+<text x="26.0" y="152.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">app asks for</text>
+<rect x="10" y="186" width="1770" height="164.5" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="212.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">NCCL</text>
+<text x="26.0" y="232.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">src/transport/</text>
+<text x="26.0" y="248.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">net_ib/ and</text>
+<text x="26.0" y="264.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">src/transport/net.cc</text>
+<rect x="10" y="360.5" width="1770" height="121.0" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="386.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">libibverbs</text>
+<text x="26.0" y="406.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">rdma-core:</text>
+<text x="26.0" y="422.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the verbs API</text>
+<rect x="10" y="491.5" width="1770" height="121.5" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="517.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">libmlx5</text>
+<text x="26.0" y="537.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">rdma-core</text>
+<text x="26.0" y="553.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">providers/mlx5/</text>
+<text x="26.0" y="569.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">(user-space mlx5</text>
+<text x="26.0" y="585.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">driver)</text>
+<rect x="10" y="623.0" width="1770" height="121.0" rx="14" fill="#eef3fb"/>
+<text x="26.0" y="649.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Kernel: uverbs</text>
+<text x="26.0" y="669.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">drivers/infiniband/</text>
+<text x="26.0" y="685.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">core/: the ioctl</text>
+<text x="26.0" y="701.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">entry point</text>
+<rect x="10" y="754.0" width="1770" height="164.5" rx="14" fill="#eef3fb"/>
+<text x="26.0" y="780.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Kernel: mlx5_ib</text>
+<text x="26.0" y="800.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">drivers/infiniband/</text>
+<text x="26.0" y="816.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">hw/mlx5/</text>
+<rect x="10" y="960.5" width="1770" height="148.5" rx="14" fill="#eef3fb"/>
+<text x="26.0" y="986.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Kernel: mlx5_core</text>
+<text x="26.0" y="1006.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">command interface</text>
+<text x="26.0" y="1022.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">(cmd.c)</text>
+<text x="26.0" y="1038.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="1054.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">shared by all</text>
+<text x="26.0" y="1070.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">three scenarios</text>
+<rect x="10" y="1119.0" width="1770" height="119.5" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="1145.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Host memory</text>
+<text x="26.0" y="1165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">DRAM</text>
+<rect x="10" y="1248.5" width="1770" height="60.0" rx="14" fill="#fbf1e6"/>
+<text x="26.0" y="1274.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">PCIe</text>
+<text x="26.0" y="1294.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">each arrow across</text>
+<text x="26.0" y="1310.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">it is a PCIe transfer</text>
+<rect x="10" y="1318.5" width="1770" height="205.0" rx="14" fill="#eaeae6"/>
+<text x="26.0" y="1344.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">NIC</text>
+<text x="26.0" y="1364.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">ConnectX</text>
+<rect x="190" y="100.0" width="304" height="66.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="342.0" y="125.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Open the NIC + PD</text>
+<text x="342.0" y="140.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">ncclCommInitRank → ncclIbInit</text>
+<circle cx="210.0" cy="120.0" r="14" fill="#1f6fd1"/>
+<text x="210.0" y="124.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">1</text>
+<rect x="508" y="100.0" width="305" height="66.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="660.5" y="125.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Register GPU memory</text>
+<text x="660.5" y="140.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">so the NIC may read / write it</text>
+<circle cx="528.8" cy="120.0" r="14" fill="#1f6fd1"/>
+<text x="528.8" y="124.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">2</text>
+<rect x="827" y="100.0" width="305" height="66.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="979.5" y="125.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Create a CQ</text>
+<text x="979.5" y="140.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">where completions will land</text>
+<circle cx="847.6" cy="120.0" r="14" fill="#1f6fd1"/>
+<text x="847.6" y="124.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">3</text>
+<rect x="1146" y="100.0" width="305" height="66.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1298.5" y="125.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Create a QP</text>
+<text x="1298.5" y="140.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">one end of the connection</text>
+<circle cx="1166.4" cy="120.0" r="14" fill="#1f6fd1"/>
+<text x="1166.4" y="124.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">4</text>
+<rect x="1465" y="100.0" width="305" height="66.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1617.5" y="125.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Connect the QP</text>
+<text x="1617.5" y="140.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">RESET → INIT → RTR → RTS</text>
+<circle cx="1485.2" cy="120.0" r="14" fill="#1f6fd1"/>
+<text x="1485.2" y="124.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">5</text>
+<rect x="190" y="200.0" width="304" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="342.0" y="225.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Find and open the NICs</text>
+<rect x="198" y="234.5" width="288" height="78.5" rx="5" fill="#f4effa"/>
+<text x="206.0" y="248.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">init.cc  ncclIbInitDevices</text>
+<text x="206.0" y="263.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ibv_get_device_list</text>
+<text x="206.0" y="277.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ibv_open_device, ibv_alloc_pd</text>
+<text x="206.0" y="292.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">(also connect.cc:</text>
+<text x="206.0" y="306.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ncclIbInitCommDevBase)</text>
+<path d="M342.4,168.0 L342.4,198.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="508" y="200.0" width="305" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="660.5" y="225.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Get a dma-buf, register it</text>
+<rect x="516" y="234.5" width="289" height="78.5" rx="5" fill="#f4effa"/>
+<text x="524.0" y="248.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">net.cc  send/recvProxyConnect</text>
+<text x="524.0" y="263.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  cuMemGetHandleForAddressRange</text>
+<text x="524.0" y="277.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    → dma-buf fd of the GPU buffer</text>
+<text x="524.0" y="292.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">reg.cc  ncclIbRegMrDmaBufInternal</text>
+<text x="524.0" y="306.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_reg_dmabuf_mr</text>
+<path d="M661.2,168.0 L661.2,198.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="827" y="200.0" width="305" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="979.5" y="225.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Create the CQ</text>
+<rect x="835" y="234.5" width="289" height="35.0" rx="5" fill="#f4effa"/>
+<text x="843.0" y="248.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">connect.cc  ncclIbInitCommDevBase</text>
+<text x="843.0" y="263.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_create_cq</text>
+<path d="M980.0,168.0 L980.0,198.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1146" y="200.0" width="305" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1298.5" y="225.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Create the QP</text>
+<rect x="1154" y="234.5" width="289" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1162.0" y="248.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">connect.cc  ncclIbQpCreate</text>
+<text x="1162.0" y="263.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_create_qp   (type RC)</text>
+<path d="M1298.8,168.0 L1298.8,198.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1465" y="200.0" width="305" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1617.5" y="225.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Swap QP info, then step the states</text>
+<rect x="1473" y="234.5" width="289" height="93.0" rx="5" fill="#f4effa"/>
+<text x="1481.0" y="248.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ncclIbConnect / ncclIbAccept:</text>
+<text x="1481.0" y="263.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  QP numbers + GIDs swapped over</text>
+<text x="1481.0" y="277.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  the bootstrap TCP socket</text>
+<text x="1481.0" y="292.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ncclIbQpInit → ibv_modify_qp</text>
+<text x="1481.0" y="306.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ncclIbQpRtr  → ibv_modify_qp</text>
+<text x="1481.0" y="321.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ncclIbQpRts  → ibv_modify_qp</text>
+<path d="M1617.6,168.0 L1617.6,198.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="190" y="374.5" width="304" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="342.0" y="400.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Open the device file</text>
+<rect x="198" y="409.0" width="288" height="49.5" rx="5" fill="#f4effa"/>
+<text x="206.0" y="423.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ibv_open_device opens</text>
+<text x="206.0" y="437.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  /dev/infiniband/uverbsN</text>
+<text x="206.0" y="452.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ibv_alloc_pd → provider op</text>
+<path d="M342.4,338.5 L342.4,372.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="508" y="374.5" width="305" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="660.5" y="400.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Verbs call</text>
+<rect x="516" y="409.0" width="289" height="20.5" rx="5" fill="#f4effa"/>
+<text x="524.0" y="423.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ibv_reg_dmabuf_mr → provider op</text>
+<path d="M661.2,338.5 L661.2,372.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="827" y="374.5" width="305" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="979.5" y="400.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Verbs call</text>
+<rect x="835" y="409.0" width="289" height="20.5" rx="5" fill="#f4effa"/>
+<text x="843.0" y="423.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ibv_create_cq → provider op</text>
+<path d="M980.0,338.5 L980.0,372.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1146" y="374.5" width="305" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1298.5" y="400.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Verbs call</text>
+<rect x="1154" y="409.0" width="289" height="20.5" rx="5" fill="#f4effa"/>
+<text x="1162.0" y="423.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ibv_create_qp → provider op</text>
+<path d="M1298.8,338.5 L1298.8,372.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1465" y="374.5" width="305" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1617.5" y="400.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Verbs call</text>
+<rect x="1473" y="409.0" width="289" height="20.5" rx="5" fill="#f4effa"/>
+<text x="1481.0" y="423.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ibv_modify_qp → provider op</text>
+<path d="M1617.6,338.5 L1617.6,372.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="190" y="505.5" width="304" height="93.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="342.0" y="531.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Allocate the PD</text>
+<rect x="198" y="540.0" width="288" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="554.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">verbs.c  mlx5_alloc_pd</text>
+<text x="206.0" y="568.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_cmd_alloc_pd</text>
+<path d="M342.4,469.5 L342.4,503.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="508" y="505.5" width="305" height="93.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="660.5" y="531.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Register the MR</text>
+<rect x="516" y="540.0" width="289" height="35.0" rx="5" fill="#f4effa"/>
+<text x="524.0" y="554.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">verbs.c  mlx5_reg_dmabuf_mr</text>
+<text x="524.0" y="568.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_cmd_reg_dmabuf_mr</text>
+<path d="M661.2,469.5 L661.2,503.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="827" y="505.5" width="305" height="93.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="979.5" y="531.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Allocate the CQ ring</text>
+<text x="979.5" y="546.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">in host memory, in NCCL's process</text>
+<rect x="835" y="555.0" width="289" height="35.0" rx="5" fill="#f4effa"/>
+<text x="843.0" y="569.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">verbs.c  mlx5_create_cq → create_cq</text>
+<text x="843.0" y="583.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_cmd_create_cq_ex2</text>
+<path d="M980.0,469.5 L980.0,503.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1146" y="505.5" width="305" height="93.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1298.5" y="531.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Allocate the SQ + RQ rings</text>
+<text x="1298.5" y="546.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">and the doorbell record</text>
+<rect x="1154" y="555.0" width="289" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1162.0" y="569.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">verbs.c  mlx5_create_qp → create_qp</text>
+<text x="1162.0" y="583.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_cmd_create_qp_ex2</text>
+<path d="M1298.8,469.5 L1298.8,503.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1465" y="505.5" width="305" height="93.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1617.5" y="531.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Modify the QP</text>
+<rect x="1473" y="540.0" width="289" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1481.0" y="554.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">verbs.c  mlx5_modify_qp</text>
+<text x="1481.0" y="568.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_cmd_modify_qp_ex</text>
+<path d="M1617.6,469.5 L1617.6,503.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="190" y="637.0" width="304" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="342.0" y="662.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">ib_uverbs</text>
+<rect x="198" y="671.5" width="288" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="685.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">uverbs_cmd.c  ib_uverbs_alloc_pd</text>
+<text x="206.0" y="700.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ops.alloc_pd</text>
+<path d="M342.4,601.0 L342.4,635.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="508" y="637.0" width="305" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="660.5" y="662.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">ib_uverbs (ioctl)</text>
+<rect x="516" y="671.5" width="289" height="49.5" rx="5" fill="#f4effa"/>
+<text x="524.0" y="685.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">UVERBS_METHOD_REG_DMABUF_MR</text>
+<text x="524.0" y="700.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  (uverbs_std_types_mr.c)</text>
+<text x="524.0" y="714.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ops.reg_user_mr_dmabuf</text>
+<path d="M661.2,601.0 L661.2,635.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="827" y="637.0" width="305" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="979.5" y="662.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">ib_uverbs (ioctl)</text>
+<rect x="835" y="671.5" width="289" height="49.5" rx="5" fill="#f4effa"/>
+<text x="843.0" y="685.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">UVERBS_METHOD_CQ_CREATE</text>
+<text x="843.0" y="700.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  (uverbs_std_types_cq.c)</text>
+<text x="843.0" y="714.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ops.create_cq</text>
+<path d="M980.0,601.0 L980.0,635.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1146" y="637.0" width="305" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1298.5" y="662.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">ib_uverbs (ioctl)</text>
+<rect x="1154" y="671.5" width="289" height="49.5" rx="5" fill="#f4effa"/>
+<text x="1162.0" y="685.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">UVERBS_METHOD_QP_CREATE</text>
+<text x="1162.0" y="700.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  (uverbs_std_types_qp.c)</text>
+<text x="1162.0" y="714.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ops.create_qp</text>
+<path d="M1298.8,601.0 L1298.8,635.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1465" y="637.0" width="305" height="93.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1617.5" y="662.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">ib_uverbs</text>
+<rect x="1473" y="671.5" width="289" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1481.0" y="685.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">uverbs_cmd.c  ib_uverbs_modify_qp</text>
+<text x="1481.0" y="700.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → modify_qp → ops.modify_qp</text>
+<path d="M1617.6,601.0 L1617.6,635.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="190" y="768.0" width="304" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="342.0" y="793.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Build the command</text>
+<rect x="198" y="802.5" width="288" height="49.5" rx="5" fill="#f4effa"/>
+<text x="206.0" y="816.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">main.c  mlx5_ib_alloc_pd</text>
+<text x="206.0" y="831.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → mlx5_cmd_exec_inout</text>
+<text x="206.0" y="845.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    (ALLOC_PD)</text>
+<path d="M342.4,732.0 L342.4,766.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="508" y="768.0" width="305" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="660.5" y="793.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Pin GPU pages, make an MKEY</text>
+<rect x="516" y="802.5" width="289" height="93.0" rx="5" fill="#f4effa"/>
+<text x="524.0" y="816.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mr.c  mlx5_ib_reg_user_mr_dmabuf</text>
+<text x="524.0" y="831.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → reg_user_mr_dmabuf</text>
+<text x="524.0" y="845.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ib_umem_dmabuf_get (pin pages)</text>
+<text x="524.0" y="860.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → create_real_mr</text>
+<text x="524.0" y="874.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → mlx5_ib_create_mkey</text>
+<text x="524.0" y="889.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    (CREATE_MKEY)</text>
+<path d="M661.2,732.0 L661.2,766.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="827" y="768.0" width="305" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="979.5" y="793.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Pin the ring, create the CQ</text>
+<rect x="835" y="802.5" width="289" height="64.0" rx="5" fill="#f4effa"/>
+<text x="843.0" y="816.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">cq.c  mlx5_ib_create_cq</text>
+<text x="843.0" y="831.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → create_cq_user  (pin ring)</text>
+<text x="843.0" y="845.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → mlx5_core_create_cq</text>
+<text x="843.0" y="860.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    (CREATE_CQ)</text>
+<path d="M980.0,732.0 L980.0,766.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1146" y="768.0" width="305" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1298.5" y="793.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Pin the rings, create the QP</text>
+<rect x="1154" y="802.5" width="289" height="64.0" rx="5" fill="#f4effa"/>
+<text x="1162.0" y="816.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">qp.c  mlx5_ib_create_qp → create_qp</text>
+<text x="1162.0" y="831.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → create_user_qp</text>
+<text x="1162.0" y="845.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → qpc.c mlx5_qpc_create_qp</text>
+<text x="1162.0" y="860.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    (CREATE_QP)</text>
+<path d="M1298.8,732.0 L1298.8,766.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="1465" y="768.0" width="305" height="136.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1617.5" y="793.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">One command per state</text>
+<rect x="1473" y="802.5" width="289" height="78.5" rx="5" fill="#f4effa"/>
+<text x="1481.0" y="816.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">qp.c  mlx5_ib_modify_qp</text>
+<text x="1481.0" y="831.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → __mlx5_ib_modify_qp</text>
+<text x="1481.0" y="845.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → qpc.c mlx5_core_qp_modify</text>
+<text x="1481.0" y="860.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    RST2INIT_QP, INIT2RTR_QP,</text>
+<text x="1481.0" y="874.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    RTR2RTS_QP</text>
+<path d="M1617.6,732.0 L1617.6,766.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<path d="M342.4,906.5 L342.4,946.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<path d="M661.2,906.5 L661.2,946.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<path d="M980.0,906.5 L980.0,946.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1298.8,906.5 L1298.8,946.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1617.6,906.5 L1617.6,946.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<path d="M342.4,946.5 L1617.6,946.5" stroke="#1f6fd1" stroke-width="1.8" fill="none"/>
+<text x="350.4" y="940.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">each column ends in mlx5_cmd_exec(opcode)</text>
+<path d="M342.4,946.5 L342.4,972.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<rect x="190" y="972.5" width="304" height="122.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="342.0" y="998.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">mlx5_cmd_exec(opcode)</text>
+<text x="342.0" y="1013.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">every setup call ends here</text>
+<rect x="198" y="1022.0" width="288" height="64.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="1036.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">cmd.c  mlx5_cmd_exec → mlx5_cmd_do</text>
+<text x="206.0" y="1050.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → cmd_exec</text>
+<text x="206.0" y="1065.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">input copied into mailboxes:</text>
+<text x="206.0" y="1079.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5_copy_to_msg</text>
+<rect x="508" y="972.5" width="305" height="122.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="660.5" y="998.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Queue the command</text>
+<text x="660.5" y="1013.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">takes a free command slot</text>
+<rect x="516" y="1022.0" width="289" height="49.5" rx="5" fill="#f4effa"/>
+<text x="524.0" y="1036.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mlx5_cmd_invoke → cmd_alloc_ent</text>
+<text x="524.0" y="1050.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → cmd_work_handler (workqueue)</text>
+<text x="524.0" y="1065.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  lay-&gt;status_own = CMD_OWNER_HW</text>
+<rect x="827" y="972.5" width="305" height="122.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="979.5" y="998.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Ring the command doorbell</text>
+<text x="979.5" y="1013.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">MMIO write to the NIC</text>
+<rect x="835" y="1022.0" width="289" height="49.5" rx="5" fill="#f4effa"/>
+<text x="843.0" y="1036.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">cmd_work_handler:</text>
+<text x="843.0" y="1050.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  iowrite32be(1 &lt;&lt; ent-&gt;idx,</text>
+<text x="843.0" y="1065.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    &amp;dev-&gt;iseg-&gt;cmd_dbell)</text>
+<rect x="1146" y="972.5" width="305" height="122.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1298.5" y="998.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Completion</text>
+<text x="1298.5" y="1013.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">the NIC posts a command EQE</text>
+<rect x="1154" y="1022.0" width="289" height="64.0" rx="5" fill="#f4effa"/>
+<text x="1162.0" y="1036.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">async EQ: MLX5_EVENT_TYPE_CMD</text>
+<text x="1162.0" y="1050.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → mlx5_cmd_comp_handler</text>
+<text x="1162.0" y="1065.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → complete(&amp;ent-&gt;done)</text>
+<text x="1162.0" y="1079.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">wait_func wakes the caller</text>
+<rect x="1465" y="972.5" width="305" height="122.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1617.5" y="998.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Result back to the caller</text>
+<text x="1617.5" y="1013.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">status + syndrome</text>
+<rect x="1473" y="1022.0" width="289" height="49.5" rx="5" fill="#f4effa"/>
+<text x="1481.0" y="1036.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mlx5_copy_from_msg  (output)</text>
+<text x="1481.0" y="1050.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">cmd_status_err, mlx5_cmd_check</text>
+<text x="1481.0" y="1065.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  errors: mlx5_cmd_out_err (dmesg)</text>
+<path d="M494.8,1033.8 L506.8,1033.8" fill="none" stroke="#1d1d1f" stroke-width="1.8" marker-end="url(#ah-1d1d1f)"/>
+<path d="M813.6,1033.8 L825.6,1033.8" fill="none" stroke="#1d1d1f" stroke-width="1.8" marker-end="url(#ah-1d1d1f)"/>
+<path d="M1451.2,1033.8 L1463.2,1033.8" fill="none" stroke="#1d1d1f" stroke-width="1.8" marker-end="url(#ah-1d1d1f)"/>
+<rect x="190" y="1131.0" width="623" height="93.5" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="501.5" y="1156.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Command queue + mailboxes</text>
+<text x="501.5" y="1171.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">the driver writes the input here; the firmware</text>
+<text x="501.5" y="1186.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">DMA-reads it and DMA-writes the output</text>
+<rect x="198" y="1195.5" width="607" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="1209.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5_cmd_layout  (cmd-&gt;cmd_buf)</text>
+<text x="206.0" y="1224.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5_cmd_msg  (mailbox blocks)</text>
+<path d="M661.2,1097.0 L661.2,1129.0" fill="none" stroke="#1d1d1f" stroke-width="1.6" marker-end="url(#ah-1d1d1f)"/>
+<rect x="190" y="1332.5" width="1580" height="74.0" rx="9" fill="#f6f6f4" stroke="#6b6b70" stroke-width="1.6"/>
+<text x="980.0" y="1358.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Firmware</text>
+<text x="980.0" y="1373.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">reads the command, checks it, creates or changes the object, then writes the output and status</text>
+<rect x="198" y="1382.5" width="1564" height="20.5" rx="5" fill="#f4effa"/>
+<text x="206.0" y="1396.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">opcodes and layouts: include/linux/mlx5/mlx5_ifc.h  (MLX5_CMD_OP_*)</text>
+<path d="M980.0,1097.0 L980.0,1330.5" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-1d1d1f)"/>
+<text x="986.0" y="1282.5" font-size="11.5" font-weight="600" fill="#1d1d1f" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">MMIO doorbell</text>
+<path d="M1298.8,1330.5 L1298.8,1097.0" fill="none" stroke="#d1343a" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-d1343a)"/>
+<text x="1304.8" y="1282.5" font-size="11.5" font-weight="600" fill="#d1343a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">command EQE + MSI-X</text>
+<path d="M230.0,1330.5 L230.0,1226.5" fill="none" stroke="#8a8a8a" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<text x="236.0" y="1282.5" font-size="11.5" font-weight="600" fill="#8a8a8a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">DMA read input / write output</text>
+<text x="190.0" y="1428.5" font-size="11.5" font-weight="600" fill="#1d1d1f" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">What now exists in the NIC:</text>
+<rect x="190" y="1438.5" width="304" height="69.0" rx="9" fill="#f3f7fd" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="342.0" y="1463.5" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">PD</text>
+<text x="342.0" y="1478.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">protection domain:</text>
+<text x="342.0" y="1493.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">groups NCCL's objects</text>
+<path d="M342.4,1408.5 L342.4,1436.5" fill="none" stroke="#6b6b70" stroke-width="1.6" marker-end="url(#ah-6b6b70)"/>
+<rect x="508" y="1438.5" width="305" height="69.0" rx="9" fill="#f3f7fd" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="660.5" y="1463.5" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">MKEY</text>
+<text x="660.5" y="1478.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">lkey + rkey for the</text>
+<text x="660.5" y="1493.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">GPU buffer</text>
+<path d="M661.2,1408.5 L661.2,1436.5" fill="none" stroke="#6b6b70" stroke-width="1.6" marker-end="url(#ah-6b6b70)"/>
+<rect x="827" y="1438.5" width="305" height="69.0" rx="9" fill="#f3f7fd" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="979.5" y="1463.5" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">CQ</text>
+<text x="979.5" y="1478.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">its ring lives in NCCL's</text>
+<text x="979.5" y="1493.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">process memory</text>
+<path d="M980.0,1408.5 L980.0,1436.5" fill="none" stroke="#6b6b70" stroke-width="1.6" marker-end="url(#ah-6b6b70)"/>
+<rect x="1146" y="1438.5" width="305" height="69.0" rx="9" fill="#f3f7fd" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1298.5" y="1463.5" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">QP in RESET</text>
+<text x="1298.5" y="1478.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">SQ + RQ rings in NCCL's</text>
+<text x="1298.5" y="1493.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">process memory</text>
+<path d="M1298.8,1408.5 L1298.8,1436.5" fill="none" stroke="#6b6b70" stroke-width="1.6" marker-end="url(#ah-6b6b70)"/>
+<rect x="1465" y="1438.5" width="305" height="69.0" rx="9" fill="#f3f7fd" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1617.5" y="1463.5" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">QP in RTS</text>
+<text x="1617.5" y="1478.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">connected to the peer's QP;</text>
+<text x="1617.5" y="1493.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">ready for RDMA WRITE</text>
+<path d="M1617.6,1408.5 L1617.6,1436.5" fill="none" stroke="#6b6b70" stroke-width="1.6" marker-end="url(#ah-6b6b70)"/>
+<rect x="10" y="1537.5" width="1770" height="84" rx="12" fill="#f7f7f5"/>
+<path d="M30.0,1567.5 L76.0,1567.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="86.0" y="1571.5" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">call goes down a layer</text>
+<path d="M290.0,1567.5 L336.0,1567.5" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-1d1d1f)"/>
+<text x="346.0" y="1571.5" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">MMIO doorbell</text>
+<path d="M480.0,1567.5 L526.0,1567.5" fill="none" stroke="#d1343a" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-d1343a)"/>
+<text x="536.0" y="1571.5" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">completion interrupt</text>
+<rect x="720" y="1555.5" width="40" height="22" rx="4" fill="#f4effa"/>
+<text x="728.0" y="1571.5" font-size="12" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">fn</text>
+<text x="770.0" y="1571.5" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">the code at that layer; indented lines are called from the line above (some steps in between are skipped)</text>
+<text x="30.0" y="1597.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Files: NCCL src/transport/net_ib/ (init.cc, reg.cc, connect.cc) and src/transport/net.cc; rdma-core libibverbs/ and providers/mlx5/verbs.c; Linux drivers/infiniband/core/ (uverbs_*.c) and drivers/infiniband/hw/mlx5/ (main.c, mr.c, cq.c, qp.c, qpc.c).</text>
+<text x="30.0" y="1613.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Checked against NCCL master, rdma-core master and Linux master, November 2026. After step 5 there are no more system calls: the data path is in A day in the life of an RDMA WRITE.</text>
+</svg>
