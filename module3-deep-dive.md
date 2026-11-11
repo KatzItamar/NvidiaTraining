@@ -213,6 +213,8 @@ For the same send and receive flows drawn end to end (PHY, MAC, NIC queues, PCIe
 
 No system calls, no interrupts (the app polls), no copies. This is why one CPU core can handle tens of millions of packets per second.
 
+For this flow drawn end to end (hugepages, polling, the doorbell from user space, setup through DevX), see [A day in the life of a DPDK packet](packet-dpdk.md).
+
 ### 3.3 Door 3: RDMA verbs (example: two GPU servers training a model)
 
 **Configure (once per connection):**
@@ -302,6 +304,8 @@ Inside one server, NCCL moves data over NVLink or PCIe. **Between servers, it us
 | 6 | Both sides call `ibv_poll_cq` to collect completions. The receiver may do a small RDMA READ ("flush") so the GPU sees all the data | no |
 
 This is the "fast path, no firmware" rule from 2.1, at enormous scale. (These steps match `src/transport/net_ib/p2p.cc` in NCCL v2.32.)
+
+For these steps drawn end to end across two servers (GPU memory, both NICs, the switch, the ACK and the CTS), see [A day in the life of an RDMA WRITE](packet-rdma-nccl.md).
 
 **NVIDIA pieces around NCCL that touch your area:**
 

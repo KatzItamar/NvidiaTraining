@@ -1,0 +1,273 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1790 1257" width="1790" height="1257" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="ah-d9822b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d9822b"/></marker>
+<marker id="ah-1f6fd1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f6fd1"/></marker>
+<marker id="ah-8a8a8a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+<marker id="ah-2e8b57" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2e8b57"/></marker>
+<marker id="ah-7a4fc4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7a4fc4"/></marker>
+</defs>
+<rect width="1790" height="1257" fill="#ffffff"/>
+<text x="20.0" y="40.0" font-size="22" font-weight="700" fill="#1d1d1f" text-anchor="start" xml:space="preserve">A day in the life of an RDMA WRITE: NCCL moves a chunk from GPU 0 to GPU 1</text>
+<text x="20.0" y="64.0" font-size="13.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Steps 1 to 16 in order. A's data goes from GPU memory to the wire and into B's GPU memory with no kernel, no interrupt, no copy, and no CPU on B touching it.</text>
+<rect x="10" y="90" width="1770" height="334" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="116.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">User space</text>
+<text x="26.0" y="136.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the app, NCCL</text>
+<text x="26.0" y="152.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">and rdma-core</text>
+<text x="26.0" y="168.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">run here</text>
+<text x="26.0" y="184.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="200.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">no system calls</text>
+<text x="26.0" y="216.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">on the data path</text>
+<rect x="10" y="434" width="1770" height="82.5" rx="14" fill="#eeeeec"/>
+<text x="26.0" y="460.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Linux kernel</text>
+<text x="26.0" y="480.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">setup only</text>
+<rect x="10" y="526.5" width="1770" height="142.0" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="552.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Host memory</text>
+<text x="26.0" y="572.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">DRAM: the rings</text>
+<text x="26.0" y="588.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">(the data itself</text>
+<text x="26.0" y="604.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">stays on the GPU)</text>
+<rect x="10" y="678.5" width="1770" height="92.0" rx="14" fill="#fbf1e6"/>
+<text x="26.0" y="704.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">PCIe + GPU</text>
+<text x="26.0" y="724.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the GPU sits on</text>
+<text x="26.0" y="740.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the same PCIe</text>
+<text x="26.0" y="756.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">switch as the NIC</text>
+<rect x="10" y="780.5" width="1770" height="237.0" rx="14" fill="#eaeae6"/>
+<text x="26.0" y="806.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">NIC</text>
+<text x="26.0" y="826.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">ConnectX /</text>
+<text x="26.0" y="842.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">SuperNIC</text>
+<text x="26.0" y="858.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="874.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">no firmware, no</text>
+<text x="26.0" y="890.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">interrupt on the</text>
+<text x="26.0" y="906.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">data path</text>
+<rect x="10" y="1027.5" width="1770" height="116.0" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="1053.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Fabric</text>
+<text x="26.0" y="1073.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">cables + switch</text>
+<rect x="190" y="124.0" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="150.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">PyTorch: all_reduce(gradients)</text>
+<text x="530.0" y="165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">every GPU calls it; here GPU 0 sends one chunk to GPU 1</text>
+<rect x="1070" y="124.0" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="150.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">PyTorch: the same all_reduce</text>
+<text x="1410.0" y="165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">returns when every chunk has arrived and been added</text>
+<rect x="190" y="201.0" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="227.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NCCL GPU kernel</text>
+<text x="530.0" y="242.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">puts the chunk in the send buffer (GPU memory), flags the proxy</text>
+<rect x="1070" y="201.0" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="227.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NCCL GPU kernel</text>
+<text x="1410.0" y="242.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">adds the received chunk to its own, passes it on</text>
+<rect x="190" y="278.0" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="304.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NCCL proxy thread (CPU)</text>
+<text x="530.0" y="319.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">sees “write here” (CTS) from B, posts the RDMA WRITEs</text>
+<rect x="1070" y="278.0" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="304.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NCCL proxy thread (CPU)</text>
+<text x="1410.0" y="319.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">sends CTS; later polls the CQ and flushes so the GPU sees the data</text>
+<rect x="330" y="355.0" width="540" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="600.0" y="381.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">rdma-core libmlx5 (user space)</text>
+<text x="600.0" y="396.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">writes the WQEs, rings the doorbell, polls the CQ</text>
+<rect x="1070" y="355.0" width="610" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1375.0" y="381.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">rdma-core libmlx5 (user space)</text>
+<text x="1375.0" y="396.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">posts RECV WQEs, polls the CQ</text>
+<rect x="890" y="278.0" width="160" height="132.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="970.0" y="303.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Setup, once</text>
+<text x="970.0" y="318.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">register GPU</text>
+<text x="970.0" y="333.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">memory, create</text>
+<text x="970.0" y="348.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">and connect QPs</text>
+<rect x="660" y="448.0" width="210" height="54.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="765.0" y="473.0" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Kernel: setup only</text>
+<text x="765.0" y="488.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">not on the data path</text>
+<rect x="890" y="448.0" width="160" height="54.5" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="970.0" y="473.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">mlx5_ib</text>
+<text x="970.0" y="488.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">setup only</text>
+<rect x="1070" y="448.0" width="210" height="54.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="1175.0" y="473.0" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Kernel: setup only</text>
+<text x="1175.0" y="488.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">not on the data path</text>
+<rect x="190" y="544.5" width="150" height="108.0" rx="9" fill="#ffffff" stroke="#2e8b57" stroke-width="1.6"/>
+<text x="265.0" y="566.5" font-size="13.5" font-weight="700" fill="#2e8b57" text-anchor="middle" xml:space="preserve">FIFO</text>
+<rect x="202.0" y="578.5" width="17.0" height="20" rx="3" fill="#2e8b57" fill-opacity="0.35" stroke="#2e8b57" stroke-width="1"/>
+<rect x="223.0" y="578.5" width="17.0" height="20" rx="3" fill="#2e8b57" fill-opacity="0.35" stroke="#2e8b57" stroke-width="1"/>
+<rect x="244.0" y="578.5" width="17.0" height="20" rx="3" fill="#ffffff" stroke="#2e8b57" stroke-width="1"/>
+<rect x="265.0" y="578.5" width="17.0" height="20" rx="3" fill="#ffffff" stroke="#2e8b57" stroke-width="1"/>
+<rect x="286.0" y="578.5" width="17.0" height="20" rx="3" fill="#ffffff" stroke="#2e8b57" stroke-width="1"/>
+<rect x="307.0" y="578.5" width="17.0" height="20" rx="3" fill="#ffffff" stroke="#2e8b57" stroke-width="1"/>
+<text x="265.0" y="623.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">CTS slots: B's</text>
+<text x="265.0" y="638.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">address + rkey</text>
+<rect x="350" y="544.5" width="130" height="108.0" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="415.0" y="566.5" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">CQ</text>
+<rect x="362.0" y="578.5" width="13.7" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="379.7" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="397.3" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="415.0" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="432.7" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="450.3" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="415.0" y="623.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">completions</text>
+<text x="415.0" y="638.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">for A</text>
+<rect x="490" y="544.5" width="130" height="108.0" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="555.0" y="566.5" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">SQ (QP)</text>
+<rect x="502.0" y="578.5" width="13.7" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="519.7" y="578.5" width="13.7" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="537.3" y="578.5" width="13.7" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="555.0" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="572.7" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="590.3" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="555.0" y="623.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">send queue:</text>
+<text x="555.0" y="638.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">RDMA WRITEs</text>
+<rect x="1320" y="544.5" width="130" height="108.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1385.0" y="566.5" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">RQ (QP)</text>
+<rect x="1332.0" y="578.5" width="13.7" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1349.7" y="578.5" width="13.7" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1367.3" y="578.5" width="13.7" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1385.0" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1402.7" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1420.3" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="1385.0" y="623.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">RECV WQEs</text>
+<text x="1385.0" y="638.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">posted ahead</text>
+<rect x="1460" y="544.5" width="130" height="108.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1525.0" y="566.5" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">CQ</text>
+<rect x="1472.0" y="578.5" width="13.7" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1489.7" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1507.3" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1525.0" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1542.7" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1560.3" y="578.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="1525.0" y="623.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">completions</text>
+<text x="1525.0" y="638.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">for B</text>
+<rect x="650" y="692.5" width="220" height="64.0" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="760.0" y="718.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">GPU 0 memory (HBM)</text>
+<text x="760.0" y="733.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">send buffer, registered</text>
+<text x="760.0" y="748.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">with the NIC (lkey)</text>
+<rect x="1070" y="692.5" width="220" height="64.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1180.0" y="718.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">GPU 1 memory (HBM)</text>
+<text x="1180.0" y="733.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">receive buffer; its</text>
+<text x="1180.0" y="748.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">address + rkey went to A</text>
+<text x="970.0" y="718.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">GPU ↔ NIC traffic goes</text>
+<text x="970.0" y="733.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">through the PCIe switch,</text>
+<text x="970.0" y="748.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">not through CPU memory</text>
+<rect x="190" y="796.5" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="822.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NIC DMA engine</text>
+<text x="530.0" y="837.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">reads the WQE, then reads the data straight from GPU memory</text>
+<rect x="1070" y="796.5" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="822.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NIC DMA engine</text>
+<text x="1410.0" y="837.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">checks the rkey, writes straight into GPU memory, writes a CQE</text>
+<rect x="190" y="871.5" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="897.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RDMA transport (RC, in hardware)</text>
+<text x="530.0" y="912.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">cuts into packets, numbers them (PSN), waits for ACK, resends</text>
+<rect x="1070" y="871.5" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="897.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RDMA transport (RC, in hardware)</text>
+<text x="1410.0" y="912.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">checks the QP and packet order (PSN), sends ACK</text>
+<rect x="190" y="946.5" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="972.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Port: pipeline + MAC + PHY</text>
+<text x="530.0" y="987.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">adds RoCEv2 (UDP 4791) or InfiniBand headers</text>
+<rect x="1070" y="946.5" width="680" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="972.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Port: pipeline + MAC + PHY</text>
+<text x="1410.0" y="987.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">receives the packets, strips the headers</text>
+<rect x="890" y="796.5" width="160" height="205.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="970.0" y="822.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Firmware</text>
+<text x="970.0" y="837.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">setup only:</text>
+<text x="970.0" y="852.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">CREATE_QP,</text>
+<text x="970.0" y="867.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">MODIFY_QP,</text>
+<text x="970.0" y="882.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">CREATE_MKEY</text>
+<rect x="870" y="1039.5" width="200" height="92.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="970.0" y="1065.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Switch</text>
+<text x="970.0" y="1080.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">Spectrum (RoCE)</text>
+<text x="970.0" y="1095.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">or Quantum (IB)</text>
+<circle cx="1728.0" cy="300.0" r="14" fill="#1f6fd1"/>
+<text x="1728.0" y="304.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">1</text>
+<circle cx="848.0" cy="146.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="150.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">2</text>
+<circle cx="848.0" cy="223.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="227.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">3</text>
+<circle cx="848.0" cy="300.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="304.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">4</text>
+<circle cx="848.0" cy="377.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="381.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">5</text>
+<circle cx="848.0" cy="818.5" r="14" fill="#d9822b"/>
+<text x="848.0" y="823.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">6</text>
+<circle cx="848.0" cy="893.5" r="14" fill="#d9822b"/>
+<text x="848.0" y="898.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">7</text>
+<circle cx="848.0" cy="968.5" r="14" fill="#d9822b"/>
+<text x="848.0" y="973.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">8</text>
+<circle cx="1050.0" cy="1061.5" r="14" fill="#8a8a8a"/>
+<text x="1050.0" y="1066.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">9</text>
+<circle cx="1092.0" cy="968.5" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="973.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">10</text>
+<circle cx="1092.0" cy="893.5" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="898.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">11</text>
+<circle cx="1092.0" cy="818.5" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="823.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">12</text>
+<circle cx="1092.0" cy="377.0" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="381.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">13</text>
+<circle cx="1092.0" cy="300.0" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="304.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">13</text>
+<circle cx="1092.0" cy="223.0" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="227.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">14</text>
+<circle cx="212.0" cy="893.5" r="14" fill="#7a4fc4"/>
+<text x="212.0" y="898.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">15</text>
+<circle cx="212.0" cy="818.5" r="14" fill="#7a4fc4"/>
+<text x="212.0" y="823.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">15</text>
+<circle cx="212.0" cy="300.0" r="14" fill="#d9822b"/>
+<text x="212.0" y="304.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">16</text>
+<path d="M760.0,181.0 L760.0,199.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M760.0,258.0 L760.0,276.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M760.0,335.0 L760.0,353.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M265.0,542.5 L265.0,335.0" fill="none" stroke="#2e8b57" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-2e8b57)"/>
+<text x="271.0" y="375.0" font-size="11.5" font-weight="600" fill="#2e8b57" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read CTS</text>
+<path d="M555.0,412.0 L555.0,542.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<text x="549.0" y="466.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">write WQE</text>
+<path d="M635.0,412.0 L635.0,794.5" fill="none" stroke="#d9822b" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#ah-d9822b)"/>
+<text x="641.0" y="586.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">MMIO</text>
+<text x="641.0" y="601.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">doorbell</text>
+<path d="M415.0,542.5 L415.0,412.0" fill="none" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-d9822b)"/>
+<text x="409.0" y="488.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">poll CQ</text>
+<path d="M555.0,794.5 L555.0,654.5" fill="none" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-d9822b)"/>
+<text x="561.0" y="750.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read WQE</text>
+<path d="M760.0,758.5 L760.0,794.5" fill="none" stroke="#d9822b" stroke-width="2.6" marker-end="url(#ah-d9822b)"/>
+<text x="766.0" y="790.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read data (GPUDirect)</text>
+<path d="M415.0,794.5 L415.0,654.5" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<text x="421.0" y="750.5" font-size="11.5" font-weight="600" fill="#7a4fc4" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<path d="M760.0,853.5 L760.0,869.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M760.0,928.5 L760.0,944.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M760.0,1003.5 L760.0,1057.5 L868.0,1057.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M1070.0,1057.5 L1180.0,1057.5 L1180.0,1003.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="752.0" y="1051.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">RDMA WRITE packets</text>
+<path d="M1180.0,944.5 L1180.0,928.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1180.0,869.5 L1180.0,853.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1180.0,794.5 L1180.0,758.5" fill="none" stroke="#1f6fd1" stroke-width="2.6" marker-end="url(#ah-1f6fd1)"/>
+<text x="1186.0" y="790.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write data (GPUDirect)</text>
+<path d="M1385.0,794.5 L1385.0,654.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-1f6fd1)"/>
+<text x="1391.0" y="750.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">take RECV WQE</text>
+<path d="M1525.0,794.5 L1525.0,654.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="1531.0" y="724.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<path d="M1525.0,542.5 L1525.0,412.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-1f6fd1)"/>
+<text x="1531.0" y="466.0" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">poll CQ</text>
+<path d="M1385.0,412.0 L1385.0,542.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<text x="1379.0" y="488.0" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">post RECV</text>
+<path d="M1180.0,353.0 L1180.0,335.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1180.0,276.0 L1180.0,258.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1180.0,199.0 L1180.0,181.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1490.0,928.5 L1490.0,944.5" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<path d="M1490.0,1003.5 L1490.0,1085.5 L1072.0,1085.5" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<path d="M870.0,1085.5 L450.0,1085.5 L450.0,1003.5" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<path d="M450.0,944.5 L450.0,928.5" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<path d="M420.0,869.5 L420.0,853.5" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<text x="1498.0" y="1079.5" font-size="11.5" font-weight="600" fill="#7a4fc4" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">ACK</text>
+<path d="M1750.0,305.5 L1768.0,305.5 L1768.0,1113.5 L1072.0,1113.5" fill="none" stroke="#2e8b57" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-2e8b57)"/>
+<path d="M870.0,1113.5 L172.0,1113.5 L172.0,598.5 L188.0,598.5" fill="none" stroke="#2e8b57" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-2e8b57)"/>
+<text x="1500.0" y="1107.5" font-size="11.5" font-weight="600" fill="#2e8b57" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">CTS: “write here”, a small RDMA WRITE sent by B's libmlx5 and NIC</text>
+<path d="M970.0,412.0 L970.0,446.0" fill="none" stroke="#8a8a8a" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<path d="M970.0,504.5 L970.0,566.5" fill="none" stroke="#8a8a8a" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<text x="970.0" y="584.5" font-size="11.5" font-weight="600" fill="#8a8a8a" text-anchor="middle" xml:space="preserve">to firmware</text>
+<text x="970.0" y="600.5" font-size="11.5" font-weight="normal" fill="#8a8a8a" text-anchor="middle" xml:space="preserve">(below)</text>
+<text x="530.0" y="108.0" font-size="13" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">SERVER A: SENDS (GPU 0)</text>
+<text x="1410.0" y="108.0" font-size="13" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">SERVER B: RECEIVES (GPU 1)</text>
+<text x="970.0" y="108.0" font-size="13" font-weight="700" fill="#8a8a8a" text-anchor="middle" xml:space="preserve">SETUP</text>
+<rect x="10" y="1159.5" width="1770" height="68" rx="12" fill="#f7f7f5"/>
+<path d="M30.0,1189.5 L76.0,1189.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<text x="86.0" y="1193.5" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">sender (A) path</text>
+<path d="M230.0,1189.5 L276.0,1189.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="286.0" y="1193.5" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">receiver (B) path</text>
+<path d="M450.0,1189.5 L496.0,1189.5" fill="none" stroke="#7a4fc4" stroke-width="2.2" marker-end="url(#ah-7a4fc4)"/>
+<text x="506.0" y="1193.5" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">ACK + A's completion</text>
+<path d="M700.0,1189.5 L746.0,1189.5" fill="none" stroke="#2e8b57" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-2e8b57)"/>
+<text x="756.0" y="1193.5" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">CTS (“write here”)</text>
+<path d="M920.0,1189.5 L966.0,1189.5" fill="none" stroke="#8a8a8a" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<text x="976.0" y="1193.5" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">setup only (once)</text>
+<text x="30.0" y="1219.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">QP = queue pair (SQ + RQ, one per connection).  WQE = work queue entry.  CQE = completion queue entry.  CTS = clear to send.  rkey = the key that lets A's NIC write into B's memory.</text>
+</svg>

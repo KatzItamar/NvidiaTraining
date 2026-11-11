@@ -1,0 +1,281 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1790 1368" width="1790" height="1368" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="ah-1f6fd1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f6fd1"/></marker>
+<marker id="ah-d9822b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d9822b"/></marker>
+<marker id="ah-d1343a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1343a"/></marker>
+<marker id="ah-8a8a8a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+</defs>
+<rect width="1790" height="1368" fill="#ffffff"/>
+<text x="20.0" y="40.0" font-size="22" font-weight="700" fill="#1d1d1f" text-anchor="start" xml:space="preserve">A day in the life of a DPDK packet: RX and TX with the mlx5 PMD on a ConnectX NIC</text>
+<text x="20.0" y="64.0" font-size="13.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">RX (blue) climbs from the cable to the app. TX (orange) goes down from the app to the cable. No kernel, no interrupts, no copies on the packet path. Step numbers match the text.</text>
+<rect x="10" y="90" width="1770" height="276" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="116.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">User space</text>
+<text x="26.0" y="136.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">one DPDK process:</text>
+<text x="26.0" y="152.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the app and the</text>
+<text x="26.0" y="168.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">mlx5 driver (PMD)</text>
+<text x="26.0" y="184.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">run together</text>
+<text x="26.0" y="200.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="216.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">memory: hugepages</text>
+<rect x="10" y="376" width="1770" height="97" rx="14" fill="#eeeeec"/>
+<text x="26.0" y="402.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Linux kernel</text>
+<text x="26.0" y="422.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">setup only</text>
+<text x="26.0" y="438.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="454.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">not on the</text>
+<text x="26.0" y="470.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">packet path</text>
+<rect x="10" y="483" width="1770" height="142" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="509.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Host memory</text>
+<text x="26.0" y="529.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">hugepages, shared</text>
+<text x="26.0" y="545.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">by the app and</text>
+<text x="26.0" y="561.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the NIC</text>
+<rect x="10" y="635" width="1770" height="60" rx="14" fill="#fbf1e6"/>
+<text x="26.0" y="661.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">PCIe</text>
+<text x="26.0" y="681.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">each arrow across it</text>
+<text x="26.0" y="697.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">is a PCIe transfer</text>
+<rect x="10" y="705" width="1770" height="401" rx="14" fill="#eaeae6"/>
+<text x="26.0" y="731.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">NIC</text>
+<text x="26.0" y="751.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">ConnectX</text>
+<text x="26.0" y="767.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="783.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the same hardware</text>
+<text x="26.0" y="799.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">as the kernel path</text>
+<rect x="10" y="1116" width="1770" height="74" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="1142.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Cable</text>
+<text x="26.0" y="1162.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">port + wire</text>
+<rect x="190" y="124.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="150.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">App: processes the packets</text>
+<text x="470.0" y="165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">your code reads each mbuf: parse, match rules, decide</text>
+<rect x="780" y="124.0" width="400" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="150.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">The polling loop (one core)</text>
+<text x="980.0" y="165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">runs forever at 100% CPU; no sleep, no syscalls</text>
+<rect x="1210" y="124.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="150.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">App: rte_eth_tx_burst(port, queue, pkts, n)</text>
+<text x="1490.0" y="165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">hands a batch of mbufs to the driver</text>
+<rect x="190" y="203.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="229.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Driver RX burst (in the app)</text>
+<text x="470.0" y="244.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">reads new CQEs, fills mbuf fields, returns the batch</text>
+<rect x="780" y="203.0" width="400" height="55.0" rx="9" fill="#ffffff" stroke="#d1343a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="980.0" y="229.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">No interrupts</text>
+<text x="980.0" y="244.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">the CQs are never armed: the core polls instead</text>
+<rect x="1210" y="203.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="229.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Driver TX burst (in the app)</text>
+<text x="1490.0" y="244.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">first frees old mbufs, then writes one WQE per packet</text>
+<rect x="190" y="282.0" width="330" height="70.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="355.0" y="307.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Refill the RQ</text>
+<text x="355.0" y="322.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">new mbufs from the mempool,</text>
+<text x="355.0" y="337.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">then update the doorbell record</text>
+<rect x="780" y="282.0" width="400" height="70.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="980.0" y="308.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Setup, once</text>
+<text x="980.0" y="323.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">create queues and flow rules; the only</text>
+<text x="980.0" y="338.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">part that goes through the kernel</text>
+<rect x="1210" y="282.0" width="230" height="70.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1325.0" y="307.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Free sent mbufs</text>
+<text x="1325.0" y="322.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">reads TX CQEs, gives</text>
+<text x="1325.0" y="337.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">mbufs back to the mempool</text>
+<rect x="1520" y="282.0" width="250" height="70.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1645.0" y="307.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Ring the doorbell</text>
+<text x="1645.0" y="322.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">MMIO write straight from</text>
+<text x="1645.0" y="337.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">user space</text>
+<rect x="330" y="390.0" width="300" height="69.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="480.0" y="415.0" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Kernel mlx5e netdev still runs</text>
+<text x="480.0" y="430.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">traffic not steered to DPDK still</text>
+<text x="480.0" y="445.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">goes to the kernel (bifurcated driver)</text>
+<rect x="780" y="390.0" width="400" height="69.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="980.0" y="416.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Setup path through the kernel</text>
+<text x="980.0" y="431.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">ioctl, then mlx5_ib sends the firmware command</text>
+<rect x="1500" y="390.0" width="230" height="69.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="1615.0" y="415.0" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Memory registered once</text>
+<text x="1615.0" y="430.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">hugepages get an lkey</text>
+<text x="1615.0" y="445.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">(MR) at start</text>
+<rect x="190" y="501.0" width="180" height="108.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="280.0" y="523.0" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">RQ</text>
+<rect x="202.0" y="535.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="228.0" y="535.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="254.0" y="535.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="280.0" y="535.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="306.0" y="535.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="332.0" y="535.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="280.0" y="580.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">receive queue: WQEs</text>
+<text x="280.0" y="595.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">→ empty mbufs</text>
+<rect x="380" y="501.0" width="180" height="108.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="470.0" y="523.0" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">mbufs (RX)</text>
+<text x="470.0" y="546.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">packet buffers the</text>
+<text x="470.0" y="561.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">NIC fills</text>
+<rect x="570" y="501.0" width="180" height="108.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="660.0" y="523.0" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">RX CQ</text>
+<rect x="582.0" y="535.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="608.0" y="535.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="634.0" y="535.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="660.0" y="535.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="686.0" y="535.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="712.0" y="535.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="660.0" y="580.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">one CQE per</text>
+<text x="660.0" y="595.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">packet received</text>
+<rect x="780" y="501.0" width="220" height="108.0" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="890.0" y="523.0" font-size="13.5" font-weight="700" fill="#8a8a8a" text-anchor="middle" xml:space="preserve">Mempool</text>
+<text x="890.0" y="546.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">free mbufs: RX refill</text>
+<text x="890.0" y="561.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">takes, TX free returns</text>
+<rect x="1210" y="501.0" width="170" height="108.0" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="1295.0" y="523.0" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">TX CQ</text>
+<rect x="1222.0" y="535.0" width="20.3" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1246.3" y="535.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1270.7" y="535.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1295.0" y="535.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1319.3" y="535.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1343.7" y="535.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="1295.0" y="580.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">one CQE per</text>
+<text x="1295.0" y="595.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">batch of WQEs</text>
+<rect x="1390" y="501.0" width="170" height="108.0" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="1475.0" y="523.0" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">SQ</text>
+<rect x="1402.0" y="535.0" width="20.3" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1426.3" y="535.0" width="20.3" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1450.7" y="535.0" width="20.3" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1475.0" y="535.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1499.3" y="535.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1523.7" y="535.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="1475.0" y="580.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">send queue: WQEs</text>
+<text x="1475.0" y="595.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">→ packet mbufs</text>
+<rect x="1570" y="501.0" width="150" height="108.0" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="1645.0" y="523.0" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">mbufs (TX)</text>
+<text x="1645.0" y="546.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">held until the</text>
+<text x="1645.0" y="561.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">NIC is done</text>
+<path d="M370.0,545.0 L378.0,545.0" fill="none" stroke="#1f6fd1" stroke-width="1.6" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1560.0,545.0 L1568.0,545.0" fill="none" stroke="#d9822b" stroke-width="1.6" marker-end="url(#ah-d9822b)"/>
+<rect x="190" y="721.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="747.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RX DMA engine</text>
+<text x="470.0" y="762.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">takes the next RQ WQE, writes the packet into that mbuf, then a CQE</text>
+<rect x="1210" y="721.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="747.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">TX DMA engine</text>
+<text x="1490.0" y="762.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">reads the WQE, then the mbuf data, later writes a CQE</text>
+<rect x="190" y="796.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="822.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RX packet pipeline</text>
+<text x="470.0" y="837.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">rte_flow rules steer packets to DPDK; RSS picks the RQ; checksums</text>
+<rect x="1210" y="796.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="822.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">TX packet pipeline</text>
+<text x="1490.0" y="837.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">checksums, TSO, VLAN, as the WQE asks</text>
+<rect x="190" y="871.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="897.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RX buffer (on-chip)</text>
+<text x="470.0" y="912.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">holds packets for the pipeline; if full: pause / PFC, or drop</text>
+<rect x="1210" y="871.0" width="560" height="55.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="897.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">TX scheduler</text>
+<text x="1490.0" y="912.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">picks which SQ sends next: QoS, rate limits, pause</text>
+<rect x="780" y="721.0" width="400" height="205.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="980.0" y="747.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Firmware</text>
+<text x="980.0" y="762.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">runs the setup commands that came</text>
+<text x="980.0" y="777.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">through DevX and the kernel.</text>
+<text x="980.0" y="792.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve"></text>
+<text x="980.0" y="807.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">Not on the per-packet path.</text>
+<rect x="190" y="946.0" width="1580" height="62.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="972.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">MAC</text>
+<text x="238.0" y="976.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">RX: find the frame, check the FCS (CRC),</text>
+<text x="238.0" y="992.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">check the destination MAC, count</text>
+<text x="1722.0" y="976.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" xml:space="preserve">TX: add the preamble and the</text>
+<text x="1722.0" y="992.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" xml:space="preserve">FCS (CRC), respect the gap</text>
+<rect x="190" y="1028.0" width="1580" height="62.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="1054.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">PHY + SerDes</text>
+<text x="238.0" y="1058.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">RX: recover the clock, turn the signal into bits,</text>
+<text x="238.0" y="1074.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">decode, correct errors (FEC)</text>
+<text x="1722.0" y="1058.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" xml:space="preserve">TX: encode, add FEC, turn bits</text>
+<text x="1722.0" y="1074.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" xml:space="preserve">into an electrical or optical signal</text>
+<rect x="190" y="1128.0" width="1580" height="50.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="1153.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Port: RJ45 (copper BASE-T) or SFP / QSFP / OSFP cage (DAC / optical)</text>
+<circle cx="212.0" cy="146.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="150.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R10</text>
+<circle cx="1748.0" cy="146.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="150.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T1</text>
+<circle cx="212.0" cy="225.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="229.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R8</text>
+<circle cx="1748.0" cy="225.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="229.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T2</text>
+<circle cx="212.0" cy="304.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="308.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R9</text>
+<circle cx="1418.0" cy="304.0" r="14" fill="#d9822b"/>
+<text x="1418.0" y="308.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T10</text>
+<circle cx="1748.0" cy="304.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="308.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T3</text>
+<circle cx="212.0" cy="743.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="747.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R6</text>
+<circle cx="728.0" cy="743.0" r="14" fill="#1f6fd1"/>
+<text x="728.0" y="747.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R7</text>
+<circle cx="1748.0" cy="743.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="747.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T4</text>
+<circle cx="1232.0" cy="743.0" r="14" fill="#d9822b"/>
+<text x="1232.0" y="747.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T9</text>
+<circle cx="212.0" cy="818.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="822.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R5</text>
+<circle cx="1748.0" cy="818.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="822.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T5</text>
+<circle cx="212.0" cy="893.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="897.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R4</text>
+<circle cx="1748.0" cy="893.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="897.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T6</text>
+<circle cx="212.0" cy="977.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="981.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R3</text>
+<circle cx="1748.0" cy="977.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="981.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T7</text>
+<circle cx="212.0" cy="1059.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="1063.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R2</text>
+<circle cx="1748.0" cy="1059.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="1063.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T8</text>
+<path d="M470.0,1230.0 L470.0,1180.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="470.0" y="1248.0" font-size="12" font-weight="600" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">bits arrive</text>
+<circle cx="440.0" cy="1216.0" r="14" fill="#1f6fd1"/>
+<text x="440.0" y="1220.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R1</text>
+<path d="M470.0,1126.0 L470.0,1092.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M470.0,1026.0 L470.0,1010.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M470.0,944.0 L470.0,928.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M470.0,869.0 L470.0,853.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M470.0,794.0 L470.0,778.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M280.0,719.0 L280.0,611.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-1f6fd1)"/>
+<text x="286.0" y="669.0" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read WQE</text>
+<path d="M470.0,719.0 L470.0,611.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="476.0" y="669.0" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write packet</text>
+<path d="M660.0,719.0 L660.0,611.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="666.0" y="669.0" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<path d="M660.0,499.0 L660.0,260.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-1f6fd1)"/>
+<text x="666.0" y="406.0" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">poll CQE</text>
+<path d="M470.0,201.0 L470.0,181.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M330.0,260.0 L330.0,280.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<path d="M280.0,354.0 L280.0,499.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<text x="286.0" y="491.0" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">new WQEs</text>
+<path d="M750.0,151.5 L778.0,151.5" fill="none" stroke="#8a8a8a" stroke-width="1.8" marker-end="url(#ah-8a8a8a)"/>
+<path d="M1180.0,151.5 L1208.0,151.5" fill="none" stroke="#8a8a8a" stroke-width="1.8" marker-end="url(#ah-8a8a8a)"/>
+<path d="M1490.0,181.0 L1490.0,201.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M1475.0,260.0 L1475.0,499.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<text x="1469.0" y="406.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">write WQE</text>
+<path d="M1640.0,260.0 L1640.0,280.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M1330.0,260.0 L1330.0,280.0" fill="none" stroke="#d9822b" stroke-width="1.8" marker-end="url(#ah-d9822b)"/>
+<path d="M1295.0,499.0 L1295.0,354.0" fill="none" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-d9822b)"/>
+<text x="1289.0" y="406.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">poll CQE</text>
+<path d="M1745.0,354.0 L1745.0,719.0" fill="none" stroke="#d9822b" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#ah-d9822b)"/>
+<text x="1739.0" y="661.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">MMIO</text>
+<text x="1739.0" y="676.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">doorbell</text>
+<path d="M1475.0,719.0 L1475.0,611.0" fill="none" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-d9822b)"/>
+<text x="1481.0" y="669.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read WQE</text>
+<path d="M1645.0,611.0 L1645.0,719.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<text x="1651.0" y="661.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read</text>
+<text x="1651.0" y="676.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">data</text>
+<path d="M1295.0,719.0 L1295.0,611.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<text x="1301.0" y="669.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<path d="M1490.0,778.0 L1490.0,794.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M1490.0,853.0 L1490.0,869.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M1490.0,928.0 L1490.0,944.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M1490.0,1010.0 L1490.0,1026.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M1490.0,1092.0 L1490.0,1126.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M1490.0,1180.0 L1490.0,1230.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<text x="1490.0" y="1248.0" font-size="12" font-weight="600" fill="#d9822b" text-anchor="middle" xml:space="preserve">bits leave</text>
+<path d="M980.0,354.0 L980.0,388.0" fill="none" stroke="#8a8a8a" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<path d="M1100.0,461.0 L1100.0,719.0" fill="none" stroke="#8a8a8a" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<text x="1106.0" y="669.0" font-size="11.5" font-weight="600" fill="#8a8a8a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">firmware command</text>
+<text x="470.0" y="108.0" font-size="13" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">RECEIVE (RX)</text>
+<text x="1490.0" y="108.0" font-size="13" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">SEND (TX)</text>
+<text x="980.0" y="108.0" font-size="13" font-weight="700" fill="#8a8a8a" text-anchor="middle" xml:space="preserve">SHARED</text>
+<rect x="10" y="1270" width="1770" height="68" rx="12" fill="#f7f7f5"/>
+<path d="M30.0,1300.0 L76.0,1300.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="86.0" y="1304.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">RX data path</text>
+<path d="M220.0,1300.0 L266.0,1300.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<text x="276.0" y="1304.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">TX data path</text>
+<path d="M410.0,1300.0 L456.0,1300.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-1f6fd1)"/>
+<text x="466.0" y="1304.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">dashed = read (DMA read or CPU poll)</text>
+<path d="M780.0,1300.0 L826.0,1300.0" fill="none" stroke="#8a8a8a" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<text x="836.0" y="1304.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">setup only (once)</text>
+<text x="30.0" y="1330.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">WQE = work queue entry (a descriptor).  CQE = completion queue entry.  mbuf = DPDK's packet buffer.  PMD = poll mode driver: the mlx5 driver that runs inside the app.</text>
+</svg>

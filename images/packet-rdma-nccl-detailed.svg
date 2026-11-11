@@ -1,0 +1,372 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1790 1856" width="1790" height="1856" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="ah-d9822b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d9822b"/></marker>
+<marker id="ah-1f6fd1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f6fd1"/></marker>
+<marker id="ah-8a8a8a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+<marker id="ah-2e8b57" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2e8b57"/></marker>
+<marker id="ah-7a4fc4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7a4fc4"/></marker>
+</defs>
+<rect width="1790" height="1856" fill="#ffffff"/>
+<text x="20.0" y="40.0" font-size="22" font-weight="700" fill="#1d1d1f" text-anchor="start" xml:space="preserve">A day in the life of an RDMA WRITE in NCCL, with the code</text>
+<text x="20.0" y="64.0" font-size="13.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Same flow as the RDMA overview drawing. Each box adds, in purple, the main functions and structs that do its job (or, for hardware, set it up).</text>
+<rect x="10" y="90" width="1770" height="591.5" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="116.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">User space</text>
+<text x="26.0" y="136.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the app, NCCL</text>
+<text x="26.0" y="152.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">and rdma-core</text>
+<text x="26.0" y="168.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">run here</text>
+<text x="26.0" y="184.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="200.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">no system calls</text>
+<text x="26.0" y="216.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">on the data path</text>
+<rect x="10" y="691.5" width="1770" height="194.0" rx="14" fill="#eeeeec"/>
+<text x="26.0" y="717.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Linux kernel</text>
+<text x="26.0" y="737.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">setup only</text>
+<rect x="10" y="895.5" width="1770" height="183.0" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="921.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Host memory</text>
+<text x="26.0" y="941.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">DRAM: the rings</text>
+<text x="26.0" y="957.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">(the data itself</text>
+<text x="26.0" y="973.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">stays on the GPU)</text>
+<rect x="10" y="1088.5" width="1770" height="147.5" rx="14" fill="#fbf1e6"/>
+<text x="26.0" y="1114.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">PCIe + GPU</text>
+<text x="26.0" y="1134.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the GPU sits on</text>
+<text x="26.0" y="1150.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the same PCIe</text>
+<text x="26.0" y="1166.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">switch as the NIC</text>
+<rect x="10" y="1246.0" width="1770" height="354.0" rx="14" fill="#eaeae6"/>
+<text x="26.0" y="1272.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">NIC</text>
+<text x="26.0" y="1292.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">ConnectX /</text>
+<text x="26.0" y="1308.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">SuperNIC</text>
+<text x="26.0" y="1324.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="1340.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">no firmware, no</text>
+<text x="26.0" y="1356.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">interrupt on the</text>
+<text x="26.0" y="1372.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">data path</text>
+<rect x="10" y="1610.0" width="1770" height="116.0" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="1636.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Fabric</text>
+<text x="26.0" y="1656.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">cables + switch</text>
+<rect x="190" y="124.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="150.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">PyTorch: all_reduce(gradients)</text>
+<text x="530.0" y="165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">every GPU calls it; here GPU 0 sends one chunk to GPU 1</text>
+<rect x="198" y="174.0" width="664" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="188.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">dist.all_reduce(tensor)</text>
+<text x="206.0" y="202.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ProcessGroupNCCL::allreduce → ncclAllReduce</text>
+<rect x="1070" y="124.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="150.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">PyTorch: the same all_reduce</text>
+<text x="1410.0" y="165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">returns when every chunk has arrived and been added</text>
+<rect x="1078" y="174.0" width="664" height="20.5" rx="5" fill="#f4effa"/>
+<text x="1086.0" y="188.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">dist.all_reduce(tensor)   (same call on GPU 1)</text>
+<rect x="190" y="240.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="266.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NCCL GPU kernel</text>
+<text x="530.0" y="281.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">puts the chunk in the send buffer (GPU memory), flags the proxy</text>
+<rect x="198" y="290.0" width="664" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="304.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">collectives.cc  ncclAllReduce → ncclEnqueueCheck</text>
+<text x="206.0" y="318.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  launches the NCCL CUDA kernel on the GPU</text>
+<rect x="1070" y="240.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="266.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NCCL GPU kernel</text>
+<text x="1410.0" y="281.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">adds the received chunk to its own, passes it on</text>
+<rect x="1078" y="290.0" width="664" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1086.0" y="304.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">the NCCL CUDA kernel waits for the proxy's flag,</text>
+<text x="1086.0" y="318.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  then reduces the data in GPU memory</text>
+<rect x="190" y="356.0" width="680" height="152.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="382.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NCCL proxy thread (CPU)</text>
+<text x="530.0" y="397.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">sees “write here” (CTS) from B, posts the RDMA WRITEs</text>
+<rect x="198" y="406.0" width="664" height="93.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="420.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">proxy.cc  ncclProxyProgress → progressOps</text>
+<text x="206.0" y="434.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">net.cc  sendProxyProgress</text>
+<text x="206.0" y="449.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">net_ib/p2p.cc  ncclIbIsend   (reads the CTS from the FIFO)</text>
+<text x="206.0" y="463.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ncclIbMultiSend: RDMA_WRITE ... RDMA_WRITE_WITH_IMM</text>
+<text x="206.0" y="478.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_post_send</text>
+<text x="206.0" y="492.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">later: ncclIbTest → ibv_poll_cq   (step 16)</text>
+<rect x="1070" y="356.0" width="680" height="152.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="382.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NCCL proxy thread (CPU)</text>
+<text x="1410.0" y="397.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">sends CTS; later polls the CQ and flushes so the GPU sees the data</text>
+<rect x="1078" y="406.0" width="664" height="93.0" rx="5" fill="#f4effa"/>
+<text x="1086.0" y="420.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">net.cc  recvProxyProgress</text>
+<text x="1086.0" y="434.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">net_ib/p2p.cc  ncclIbIrecv</text>
+<text x="1086.0" y="449.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ncclIbPostFifo: CTS as RDMA_WRITE → ibv_post_send</text>
+<text x="1086.0" y="463.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  RECV WQEs pre-posted at connect:</text>
+<text x="1086.0" y="478.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    ncclIbReceiverPrePostReceiveWorkRequests</text>
+<text x="1086.0" y="492.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ncclIbTest → ibv_poll_cq;  ncclIbIflush (RDMA_READ)</text>
+<rect x="330" y="530.0" width="540" height="137.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="600.0" y="556.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">rdma-core libmlx5 (user space)</text>
+<text x="600.0" y="571.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">writes the WQEs, rings the doorbell, polls the CQ</text>
+<rect x="338" y="580.0" width="524" height="78.5" rx="5" fill="#f4effa"/>
+<text x="346.0" y="594.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">providers/mlx5/qp.c  mlx5_post_send</text>
+<text x="346.0" y="608.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  _mlx5_post_send: set_raddr_seg, set_data_ptr_seg</text>
+<text x="346.0" y="623.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  post_send_db: doorbell record + MMIO</text>
+<text x="346.0" y="637.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    (mlx5_bf_copy or mmio_write64_be)</text>
+<text x="346.0" y="652.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">cq.c  mlx5_poll_cq → poll_cq → mlx5_poll_one</text>
+<rect x="1070" y="530.0" width="610" height="137.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1375.0" y="556.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">rdma-core libmlx5 (user space)</text>
+<text x="1375.0" y="571.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">posts RECV WQEs, polls the CQ</text>
+<rect x="1078" y="580.0" width="594" height="64.0" rx="5" fill="#f4effa"/>
+<text x="1086.0" y="594.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">providers/mlx5/qp.c  mlx5_post_recv</text>
+<text x="1086.0" y="608.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  (RQ WQE + doorbell record, no MMIO)</text>
+<text x="1086.0" y="623.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">cq.c  mlx5_poll_cq → mlx5_poll_one</text>
+<text x="1086.0" y="637.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  opcode IBV_WC_RECV_RDMA_WITH_IMM</text>
+<rect x="890" y="356.0" width="160" height="311.5" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="970.0" y="381.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Setup, once</text>
+<text x="970.0" y="396.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">register GPU</text>
+<text x="970.0" y="411.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">memory, create</text>
+<text x="970.0" y="426.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">and connect QPs</text>
+<rect x="898" y="435.5" width="144" height="136.5" rx="5" fill="#f4effa"/>
+<text x="906.0" y="449.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">init.cc</text>
+<text x="906.0" y="464.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  bootstrapInit</text>
+<text x="906.0" y="478.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">net_ib/reg.cc</text>
+<text x="906.0" y="493.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ncclIbRegMrDmaBuf</text>
+<text x="906.0" y="507.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">net_ib/connect.cc</text>
+<text x="906.0" y="522.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ncclIbConnect</text>
+<text x="906.0" y="536.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ncclIbAccept</text>
+<text x="906.0" y="551.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ncclIbQpCreate</text>
+<text x="906.0" y="565.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ncclIbQpRtr / Rts</text>
+<rect x="660" y="705.5" width="210" height="54.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="765.0" y="730.5" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Kernel: setup only</text>
+<text x="765.0" y="745.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">not on the data path</text>
+<rect x="890" y="705.5" width="160" height="166.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="970.0" y="731.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">mlx5_ib</text>
+<text x="970.0" y="746.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">setup only</text>
+<rect x="898" y="755.0" width="144" height="107.5" rx="5" fill="#f4effa"/>
+<text x="906.0" y="769.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">uverbs ioctl</text>
+<text x="906.0" y="783.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mr.c</text>
+<text x="906.0" y="798.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5_ib_reg_</text>
+<text x="906.0" y="812.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  user_mr_dmabuf</text>
+<text x="906.0" y="827.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">qp.c</text>
+<text x="906.0" y="841.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5_ib_create_qp</text>
+<text x="906.0" y="856.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5_ib_modify_qp</text>
+<rect x="1070" y="705.5" width="210" height="54.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="1175.0" y="730.5" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Kernel: setup only</text>
+<text x="1175.0" y="745.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">not on the data path</text>
+<rect x="190" y="913.5" width="150" height="149.0" rx="9" fill="#ffffff" stroke="#2e8b57" stroke-width="1.6"/>
+<text x="265.0" y="935.5" font-size="13.5" font-weight="700" fill="#2e8b57" text-anchor="middle" xml:space="preserve">FIFO</text>
+<rect x="202.0" y="947.5" width="17.0" height="20" rx="3" fill="#2e8b57" fill-opacity="0.35" stroke="#2e8b57" stroke-width="1"/>
+<rect x="223.0" y="947.5" width="17.0" height="20" rx="3" fill="#2e8b57" fill-opacity="0.35" stroke="#2e8b57" stroke-width="1"/>
+<rect x="244.0" y="947.5" width="17.0" height="20" rx="3" fill="#ffffff" stroke="#2e8b57" stroke-width="1"/>
+<rect x="265.0" y="947.5" width="17.0" height="20" rx="3" fill="#ffffff" stroke="#2e8b57" stroke-width="1"/>
+<rect x="286.0" y="947.5" width="17.0" height="20" rx="3" fill="#ffffff" stroke="#2e8b57" stroke-width="1"/>
+<rect x="307.0" y="947.5" width="17.0" height="20" rx="3" fill="#ffffff" stroke="#2e8b57" stroke-width="1"/>
+<text x="265.0" y="992.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">CTS slots: B's</text>
+<text x="265.0" y="1007.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">address + rkey</text>
+<rect x="196" y="1016.5" width="138" height="35.0" rx="5" fill="#f4effa"/>
+<text x="202.0" y="1030.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct</text>
+<text x="202.0" y="1045.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve"> ncclIbSendFifo</text>
+<rect x="350" y="913.5" width="130" height="149.0" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="415.0" y="935.5" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">CQ</text>
+<rect x="362.0" y="947.5" width="13.7" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="379.7" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="397.3" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="415.0" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="432.7" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="450.3" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="415.0" y="992.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">completions</text>
+<text x="415.0" y="1007.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">for A</text>
+<rect x="356" y="1016.5" width="118" height="20.5" rx="5" fill="#f4effa"/>
+<text x="362.0" y="1030.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5_cq</text>
+<rect x="490" y="913.5" width="130" height="149.0" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="555.0" y="935.5" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">SQ (QP)</text>
+<rect x="502.0" y="947.5" width="13.7" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="519.7" y="947.5" width="13.7" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="537.3" y="947.5" width="13.7" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="555.0" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="572.7" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="590.3" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="555.0" y="992.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">send queue:</text>
+<text x="555.0" y="1007.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">RDMA WRITEs</text>
+<rect x="496" y="1016.5" width="118" height="35.0" rx="5" fill="#f4effa"/>
+<text x="502.0" y="1030.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5_qp</text>
+<text x="502.0" y="1045.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">MLX5_SND_DBR</text>
+<rect x="1320" y="913.5" width="130" height="149.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1385.0" y="935.5" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">RQ (QP)</text>
+<rect x="1332.0" y="947.5" width="13.7" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1349.7" y="947.5" width="13.7" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1367.3" y="947.5" width="13.7" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1385.0" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1402.7" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1420.3" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="1385.0" y="992.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">RECV WQEs</text>
+<text x="1385.0" y="1007.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">posted ahead</text>
+<rect x="1326" y="1016.5" width="118" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1332.0" y="1030.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5_qp</text>
+<text x="1332.0" y="1045.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">MLX5_RCV_DBR</text>
+<rect x="1460" y="913.5" width="130" height="149.0" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1525.0" y="935.5" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">CQ</text>
+<rect x="1472.0" y="947.5" width="13.7" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1489.7" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1507.3" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1525.0" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1542.7" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="1560.3" y="947.5" width="13.7" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="1525.0" y="992.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">completions</text>
+<text x="1525.0" y="1007.5" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">for B</text>
+<rect x="1466" y="1016.5" width="118" height="20.5" rx="5" fill="#f4effa"/>
+<text x="1472.0" y="1030.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5_cq</text>
+<rect x="650" y="1102.5" width="220" height="119.5" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="760.0" y="1128.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">GPU 0 memory (HBM)</text>
+<text x="760.0" y="1143.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">send buffer, registered</text>
+<text x="760.0" y="1158.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">with the NIC (lkey)</text>
+<rect x="658" y="1167.0" width="204" height="49.5" rx="5" fill="#f4effa"/>
+<text x="666.0" y="1181.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">NCCL buffer registered by</text>
+<text x="666.0" y="1195.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ncclIbRegMrDmaBuf</text>
+<text x="666.0" y="1210.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → ibv_reg_dmabuf_mr</text>
+<rect x="1070" y="1102.5" width="220" height="119.5" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1180.0" y="1128.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">GPU 1 memory (HBM)</text>
+<text x="1180.0" y="1143.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">receive buffer; its</text>
+<text x="1180.0" y="1158.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">address + rkey went to A</text>
+<rect x="1078" y="1167.0" width="204" height="49.5" rx="5" fill="#f4effa"/>
+<text x="1086.0" y="1181.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">the kernel pins it with</text>
+<text x="1086.0" y="1195.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ib_umem_dmabuf_get</text>
+<text x="1086.0" y="1210.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  (or nvidia-peermem)</text>
+<text x="970.0" y="1156.2" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">GPU ↔ NIC traffic goes</text>
+<text x="970.0" y="1171.2" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">through the PCIe switch,</text>
+<text x="970.0" y="1186.2" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">not through CPU memory</text>
+<rect x="190" y="1262.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="1288.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NIC DMA engine</text>
+<text x="530.0" y="1303.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">reads the WQE, then reads the data straight from GPU memory</text>
+<rect x="198" y="1312.0" width="664" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="1326.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">QP set up by: mlx5_ib_create_qp → CREATE_QP</text>
+<text x="206.0" y="1340.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">lkey checked against the MKEY (CREATE_MKEY)</text>
+<rect x="1070" y="1262.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="1288.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NIC DMA engine</text>
+<text x="1410.0" y="1303.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">checks the rkey, writes straight into GPU memory, writes a CQE</text>
+<rect x="1078" y="1312.0" width="664" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1086.0" y="1326.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">rkey checked against the MKEY made by</text>
+<text x="1086.0" y="1340.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5_ib_reg_user_mr_dmabuf → CREATE_MKEY</text>
+<rect x="190" y="1376.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="1402.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RDMA transport (RC, in hardware)</text>
+<text x="530.0" y="1417.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">cuts into packets, numbers them (PSN), waits for ACK, resends</text>
+<rect x="198" y="1426.0" width="664" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="1440.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">QP to RTS: ncclIbQpRts → ibv_modify_qp</text>
+<text x="206.0" y="1454.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → mlx5_ib_modify_qp   (timeout, retry_cnt)</text>
+<rect x="1070" y="1376.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="1402.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RDMA transport (RC, in hardware)</text>
+<text x="1410.0" y="1417.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">checks the QP and packet order (PSN), sends ACK</text>
+<rect x="1078" y="1426.0" width="664" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1086.0" y="1440.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">QP to RTR: ncclIbQpRtr → ibv_modify_qp</text>
+<text x="1086.0" y="1454.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → mlx5_ib_modify_qp</text>
+<rect x="190" y="1490.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="530.0" y="1516.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Port: pipeline + MAC + PHY</text>
+<text x="530.0" y="1531.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">adds RoCEv2 (UDP 4791) or InfiniBand headers</text>
+<rect x="198" y="1540.0" width="664" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="1554.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">RoCE: GID index (NCCL_IB_GID_INDEX),</text>
+<text x="206.0" y="1568.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  traffic class (NCCL_IB_TC), PFC / ECN</text>
+<rect x="1070" y="1490.0" width="680" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1410.0" y="1516.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Port: pipeline + MAC + PHY</text>
+<text x="1410.0" y="1531.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">receives the packets, strips the headers</text>
+<rect x="1078" y="1540.0" width="664" height="20.5" rx="5" fill="#f4effa"/>
+<text x="1086.0" y="1554.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">same port settings on both sides</text>
+<rect x="890" y="1262.0" width="160" height="322.0" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="970.0" y="1287.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Firmware</text>
+<text x="970.0" y="1302.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">setup only:</text>
+<text x="970.0" y="1317.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">CREATE_QP,</text>
+<text x="970.0" y="1332.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">MODIFY_QP,</text>
+<text x="970.0" y="1347.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">CREATE_MKEY</text>
+<rect x="898" y="1356.5" width="144" height="35.0" rx="5" fill="#f4effa"/>
+<text x="906.0" y="1370.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">cmd.c</text>
+<text x="906.0" y="1385.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5_cmd_do</text>
+<rect x="870" y="1622.0" width="200" height="92.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="970.0" y="1647.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Switch</text>
+<text x="970.0" y="1662.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">Spectrum (RoCE)</text>
+<text x="970.0" y="1677.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">or Quantum (IB)</text>
+<circle cx="1728.0" cy="378.0" r="14" fill="#1f6fd1"/>
+<text x="1728.0" y="382.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">1</text>
+<circle cx="848.0" cy="146.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="150.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">2</text>
+<circle cx="848.0" cy="262.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="266.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">3</text>
+<circle cx="848.0" cy="378.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="382.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">4</text>
+<circle cx="848.0" cy="552.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="556.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">5</text>
+<circle cx="848.0" cy="1284.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="1288.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">6</text>
+<circle cx="848.0" cy="1398.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="1402.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">7</text>
+<circle cx="848.0" cy="1512.0" r="14" fill="#d9822b"/>
+<text x="848.0" y="1516.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">8</text>
+<circle cx="1050.0" cy="1644.0" r="14" fill="#8a8a8a"/>
+<text x="1050.0" y="1648.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">9</text>
+<circle cx="1092.0" cy="1512.0" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="1516.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">10</text>
+<circle cx="1092.0" cy="1398.0" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="1402.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">11</text>
+<circle cx="1092.0" cy="1284.0" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="1288.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">12</text>
+<circle cx="1092.0" cy="552.0" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="556.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">13</text>
+<circle cx="1092.0" cy="378.0" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="382.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">13</text>
+<circle cx="1092.0" cy="262.0" r="14" fill="#1f6fd1"/>
+<text x="1092.0" y="266.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">14</text>
+<circle cx="212.0" cy="1398.0" r="14" fill="#7a4fc4"/>
+<text x="212.0" y="1402.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">15</text>
+<circle cx="212.0" cy="1284.0" r="14" fill="#7a4fc4"/>
+<text x="212.0" y="1288.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">15</text>
+<circle cx="212.0" cy="378.0" r="14" fill="#d9822b"/>
+<text x="212.0" y="382.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">16</text>
+<path d="M760.0,220.0 L760.0,238.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M760.0,336.0 L760.0,354.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M760.0,510.0 L760.0,528.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M265.0,911.5 L265.0,510.0" fill="none" stroke="#2e8b57" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-2e8b57)"/>
+<text x="271.0" y="550.0" font-size="11.5" font-weight="600" fill="#2e8b57" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read CTS</text>
+<path d="M555.0,669.5 L555.0,911.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<text x="549.0" y="723.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">write WQE</text>
+<path d="M635.0,669.5 L635.0,1260.0" fill="none" stroke="#d9822b" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#ah-d9822b)"/>
+<text x="641.0" y="955.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">MMIO</text>
+<text x="641.0" y="970.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">doorbell</text>
+<path d="M415.0,911.5 L415.0,669.5" fill="none" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-d9822b)"/>
+<text x="409.0" y="745.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">poll CQ</text>
+<path d="M555.0,1260.0 L555.0,1064.5" fill="none" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-d9822b)"/>
+<text x="561.0" y="1188.2" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read WQE</text>
+<path d="M760.0,1224.0 L760.0,1260.0" fill="none" stroke="#d9822b" stroke-width="2.6" marker-end="url(#ah-d9822b)"/>
+<text x="766.0" y="1256.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read data (GPUDirect)</text>
+<path d="M415.0,1260.0 L415.0,1064.5" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<text x="421.0" y="1188.2" font-size="11.5" font-weight="600" fill="#7a4fc4" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<path d="M760.0,1358.0 L760.0,1374.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M760.0,1472.0 L760.0,1488.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M760.0,1586.0 L760.0,1640.0 L868.0,1640.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<path d="M1070.0,1640.0 L1180.0,1640.0 L1180.0,1586.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="752.0" y="1634.0" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">RDMA WRITE packets</text>
+<path d="M1180.0,1488.0 L1180.0,1472.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1180.0,1374.0 L1180.0,1358.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1180.0,1260.0 L1180.0,1224.0" fill="none" stroke="#1f6fd1" stroke-width="2.6" marker-end="url(#ah-1f6fd1)"/>
+<text x="1186.0" y="1256.0" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write data (GPUDirect)</text>
+<path d="M1385.0,1260.0 L1385.0,1064.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-1f6fd1)"/>
+<text x="1391.0" y="1188.2" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">take RECV WQE</text>
+<path d="M1525.0,1260.0 L1525.0,1064.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="1531.0" y="1162.2" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<path d="M1525.0,911.5 L1525.0,669.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-1f6fd1)"/>
+<text x="1531.0" y="723.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">poll CQ</text>
+<path d="M1385.0,669.5 L1385.0,911.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-1f6fd1)"/>
+<text x="1379.0" y="745.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">post RECV</text>
+<path d="M1180.0,528.0 L1180.0,510.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1180.0,354.0 L1180.0,336.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1180.0,238.0 L1180.0,220.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<path d="M1490.0,1472.0 L1490.0,1488.0" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<path d="M1490.0,1586.0 L1490.0,1668.0 L1072.0,1668.0" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<path d="M870.0,1668.0 L450.0,1668.0 L450.0,1586.0" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<path d="M450.0,1488.0 L450.0,1472.0" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<path d="M420.0,1374.0 L420.0,1358.0" fill="none" stroke="#7a4fc4" stroke-width="1.8" marker-end="url(#ah-7a4fc4)"/>
+<text x="1498.0" y="1662.0" font-size="11.5" font-weight="600" fill="#7a4fc4" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">ACK</text>
+<path d="M1750.0,432.0 L1768.0,432.0 L1768.0,1696.0 L1072.0,1696.0" fill="none" stroke="#2e8b57" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-2e8b57)"/>
+<path d="M870.0,1696.0 L172.0,1696.0 L172.0,988.0 L188.0,988.0" fill="none" stroke="#2e8b57" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-2e8b57)"/>
+<text x="1500.0" y="1690.0" font-size="11.5" font-weight="600" fill="#2e8b57" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">CTS: “write here”, a small RDMA WRITE sent by B's libmlx5 and NIC</text>
+<path d="M970.0,669.5 L970.0,703.5" fill="none" stroke="#8a8a8a" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<path d="M970.0,873.5 L970.0,935.5" fill="none" stroke="#8a8a8a" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<text x="970.0" y="953.5" font-size="11.5" font-weight="600" fill="#8a8a8a" text-anchor="middle" xml:space="preserve">to firmware</text>
+<text x="970.0" y="969.5" font-size="11.5" font-weight="normal" fill="#8a8a8a" text-anchor="middle" xml:space="preserve">(below)</text>
+<text x="530.0" y="108.0" font-size="13" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">SERVER A: SENDS (GPU 0)</text>
+<text x="1410.0" y="108.0" font-size="13" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">SERVER B: RECEIVES (GPU 1)</text>
+<text x="970.0" y="108.0" font-size="13" font-weight="700" fill="#8a8a8a" text-anchor="middle" xml:space="preserve">SETUP</text>
+<rect x="10" y="1742.0" width="1770" height="84" rx="12" fill="#f7f7f5"/>
+<path d="M30.0,1772.0 L76.0,1772.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-d9822b)"/>
+<text x="86.0" y="1776.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">sender (A) path</text>
+<path d="M230.0,1772.0 L276.0,1772.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-1f6fd1)"/>
+<text x="286.0" y="1776.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">receiver (B) path</text>
+<path d="M450.0,1772.0 L496.0,1772.0" fill="none" stroke="#7a4fc4" stroke-width="2.2" marker-end="url(#ah-7a4fc4)"/>
+<text x="506.0" y="1776.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">ACK + A's completion</text>
+<path d="M700.0,1772.0 L746.0,1772.0" fill="none" stroke="#2e8b57" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-2e8b57)"/>
+<text x="756.0" y="1776.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">CTS (“write here”)</text>
+<path d="M920.0,1772.0 L966.0,1772.0" fill="none" stroke="#8a8a8a" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-8a8a8a)"/>
+<text x="976.0" y="1776.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">setup only (once)</text>
+<rect x="1130" y="1760.0" width="40" height="22" rx="4" fill="#f4effa"/>
+<text x="1138.0" y="1776.0" font-size="12" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">fn</text>
+<text x="1180.0" y="1776.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">code that does or sets up the box</text>
+<text x="30.0" y="1802.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Files: NCCL src/ and src/transport/net_ib/; rdma-core providers/mlx5/; kernel drivers/infiniband/hw/mlx5/. Indented lines are called from the line above (some steps in between are skipped).</text>
+<text x="30.0" y="1818.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Checked against NCCL master, rdma-core master and Linux master, November 2026.   QP = queue pair.  WQE = work queue entry.  CQE = completion queue entry.  MKEY = the NIC's memory key (lkey / rkey).</text>
+</svg>

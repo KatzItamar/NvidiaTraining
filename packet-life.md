@@ -162,6 +162,11 @@ The hardware part (R1 to R7, T5 to T10 without the interrupt) is **the same** fo
 | Kernel on the packet path | Yes | No | No |
 | Data copied by the CPU | Yes, into the app at `recv()` | No | No: the NIC writes straight into app (or GPU) memory |
 
+Each of these has its own page, drawn the same way:
+
+- [A day in the life of a DPDK packet](packet-dpdk.md): the app polls the NIC from user space.
+- [A day in the life of an RDMA WRITE](packet-rdma-nccl.md): NCCL moves GPU data between two servers.
+
 For the code-level version of these flows (file names and functions), see [Module 3 deep dive, 4.3 Send and receive in detail](module3-deep-dive.md#43-send-and-receive-in-detail).
 
 Editable source of the drawing: [images/packet-rx-tx.svg](images/packet-rx-tx.svg).
