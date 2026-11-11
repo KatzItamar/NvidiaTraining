@@ -13,6 +13,8 @@ This is the **kernel sockets** path (door 1 in the [Module 3 deep dive](module3-
 - **Numbered circles** are steps. `R1` to `R14` are receive, `T1` to `T11` are send. The tables below explain each one.
 - **Solid arrows** move packet data. **Dashed arrows** are reads (the NIC or the CPU fetching something). The **red dashed arrow** is the interrupt.
 
+**Want to dive deeper?** [Find it in the code](packet-life-code.md) has the same drawing with the main kernel functions for every box.
+
 ---
 
 ## The five words you need
@@ -66,7 +68,7 @@ After this, firmware is **not** on the per-packet path. That's why the drawing s
 | Step | Where | What happens |
 | --- | --- | --- |
 | **R8** | Event + interrupt unit | If the CQ is **armed**, the NIC writes an **EQE** into the event queue ("CQ n has new CQEs"). Then it sends an **MSI-X interrupt**. An MSI-X interrupt is just one more PCIe memory write, to an address owned by the CPU's interrupt controller. The IRQ affinity setting decides which core receives it. The CQ then disarms itself, so the NIC raises **no more interrupts** until the driver re-arms it. If the CQ is not armed, the CQE is written and no interrupt is sent |
-| **R9** | CPU: hard IRQ handler | The core stops what it was doing and runs the handler: `mlx5_irq_int_handler`, then `mlx5_eq_comp_int`, which reads the EQE and calls `mlx5e_completion_event`. That calls `napi_schedule()`. The handler does **no packet work**. It returns within a few microseconds and leaves the real work to a softirq |
+| **R9** | CPU: hard IRQ handler | The core stops what it was doing and runs the handler: `irq_int_handler` (in `pci_irq.c`), which calls the EQ's notifier, `mlx5_eq_comp_int`, which reads the EQE and calls `mlx5e_completion_event`. That calls `napi_schedule()`. The handler does **no packet work**. It returns within a few microseconds and leaves the real work to a softirq |
 
 **Why so little work in the interrupt?** An interrupt per packet would kill the CPU at millions of packets per second. So Linux uses **NAPI**: one interrupt wakes a poll loop, and the poll loop then handles many packets **with interrupts off**. The NIC also delays the interrupt a little to batch more packets (**interrupt moderation**, set with `ethtool -C`, and tuned automatically by **DIM**). That trades a few microseconds of latency for much less CPU load.
 

@@ -1,0 +1,428 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1790 2023" width="1790" height="2023" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="ah-rx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f6fd1"/></marker>
+<marker id="ah-tx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d9822b"/></marker>
+<marker id="ah-irq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1343a"/></marker>
+<marker id="ah-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+</defs>
+<rect width="1790" height="2023" fill="#ffffff"/>
+<text x="20.0" y="40.0" font-size="22" font-weight="700" fill="#1d1d1f" text-anchor="start" xml:space="preserve">A day in the life of a packet, with the code: RX and TX on a ConnectX NIC with the mlx5 driver</text>
+<text x="20.0" y="64.0" font-size="13.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Same flow as the overview drawing. Each box adds, in purple, the main functions and structs that do its job (or, for hardware, set it up), so you can find it in the source.</text>
+<rect x="10" y="90" width="1770" height="154.5" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="116.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">User space</text>
+<text x="26.0" y="136.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the application</text>
+<rect x="10" y="254.5" width="1770" height="557.5" rx="14" fill="#eef3fb"/>
+<text x="26.0" y="280.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Linux kernel</text>
+<text x="26.0" y="300.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">runs on a CPU core</text>
+<text x="26.0" y="316.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="332.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">mlx5_core (mlx5e)</text>
+<text x="26.0" y="348.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">+ net stack</text>
+<rect x="10" y="822.0" width="1770" height="199.5" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="848.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Host memory</text>
+<text x="26.0" y="868.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">DRAM, shared by</text>
+<text x="26.0" y="884.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">CPU and NIC</text>
+<text x="26.0" y="900.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="916.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">rings live here</text>
+<rect x="10" y="1031.5" width="1770" height="60.0" rx="14" fill="#fbf1e6"/>
+<text x="26.0" y="1057.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">PCIe</text>
+<text x="26.0" y="1077.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">each arrow across it</text>
+<text x="26.0" y="1093.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">is a PCIe transfer</text>
+<rect x="10" y="1101.5" width="1770" height="629.5" rx="14" fill="#eaeae6"/>
+<text x="26.0" y="1127.5" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">NIC</text>
+<text x="26.0" y="1147.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">ConnectX</text>
+<text x="26.0" y="1163.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="1179.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">hardware does</text>
+<text x="26.0" y="1195.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">every step here</text>
+<text x="26.0" y="1211.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">with no CPU help</text>
+<text x="26.0" y="1227.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="26.0" y="1243.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">purple = driver code</text>
+<text x="26.0" y="1259.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">that sets it up</text>
+<rect x="10" y="1741.0" width="1770" height="96.0" rx="14" fill="#f1f1ef"/>
+<text x="26.0" y="1767.0" font-size="15" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Cable</text>
+<text x="26.0" y="1787.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">port + wire</text>
+<rect x="10" y="1917.0" width="1770" height="92.0" rx="12" fill="#f7f7f5"/>
+<text x="470.0" y="106.0" font-size="13" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">RECEIVE (RX)</text>
+<text x="1490.0" y="106.0" font-size="13" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">SEND (TX)</text>
+<text x="980.0" y="106.0" font-size="13" font-weight="700" fill="#d1343a" text-anchor="middle" xml:space="preserve">SHARED BY RX AND TX</text>
+<rect x="190" y="124.0" width="560" height="108.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="150.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">App: recv() returns the data</text>
+<text x="470.0" y="165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">the kernel copies the data into the app's buffer</text>
+<rect x="198" y="174.0" width="544" height="49.5" rx="5" fill="#f4effa"/>
+<text x="206.0" y="188.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">__sys_recvfrom → sock_recvmsg</text>
+<text x="206.0" y="202.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  tcp_recvmsg → tcp_recvmsg_locked</text>
+<text x="206.0" y="217.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    skb_copy_datagram_msg</text>
+<rect x="1210" y="124.0" width="560" height="108.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="150.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">App: send(data)</text>
+<text x="1490.0" y="165.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">system call into the kernel</text>
+<rect x="1218" y="174.0" width="544" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1226.0" y="188.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">__sys_sendto → sock_sendmsg</text>
+<text x="1226.0" y="202.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  tcp_sendmsg → tcp_sendmsg_locked</text>
+<rect x="190" y="270.5" width="560" height="137.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="296.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">TCP/IP stack</text>
+<text x="470.0" y="311.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">IP and TCP check the packet, queue the data on the socket, wake the app</text>
+<rect x="198" y="320.5" width="544" height="78.5" rx="5" fill="#f4effa"/>
+<text x="206.0" y="334.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">gro_normal_list → netif_receive_skb_list_internal</text>
+<text x="206.0" y="349.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  __netif_receive_skb_core → ip_rcv</text>
+<text x="206.0" y="363.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ip_local_deliver → tcp_v4_rcv</text>
+<text x="206.0" y="378.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  tcp_rcv_established → tcp_data_queue</text>
+<text x="206.0" y="392.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  sk-&gt;sk_data_ready()   (wakes recv)</text>
+<rect x="780" y="270.5" width="400" height="137.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="296.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">TX completion</text>
+<text x="980.0" y="311.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">unmap, free the skb, wake the queue</text>
+<rect x="788" y="320.5" width="384" height="78.5" rx="5" fill="#f4effa"/>
+<text x="796.0" y="334.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en_tx.c  mlx5e_poll_tx_cq</text>
+<text x="796.0" y="349.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_tx_dma_unmap</text>
+<text x="796.0" y="363.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  napi_consume_skb</text>
+<text x="796.0" y="378.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  netdev_tx_completed_queue  (BQL)</text>
+<text x="796.0" y="392.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  netif_tx_wake_queue</text>
+<rect x="1210" y="270.5" width="560" height="137.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="296.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">TCP/IP stack + qdisc</text>
+<text x="1490.0" y="311.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">build the skb and headers; the qdisc and XPS pick the SQ</text>
+<rect x="1218" y="320.5" width="544" height="78.5" rx="5" fill="#f4effa"/>
+<text x="1226.0" y="334.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">tcp_write_xmit → __tcp_transmit_skb</text>
+<text x="1226.0" y="349.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  ip_queue_xmit → ip_finish_output2</text>
+<text x="1226.0" y="363.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  __dev_queue_xmit → netdev_core_pick_tx</text>
+<text x="1226.0" y="378.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    .ndo_select_queue = mlx5e_select_queue</text>
+<text x="1226.0" y="392.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  __dev_xmit_skb → dev_hard_start_xmit</text>
+<rect x="190" y="434.0" width="560" height="166.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="460.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NAPI RX poll</text>
+<text x="470.0" y="475.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">each CQE → skb around the filled buffer (no copy), XDP, GRO</text>
+<rect x="198" y="484.0" width="544" height="107.5" rx="5" fill="#f4effa"/>
+<text x="206.0" y="498.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en_rx.c  mlx5e_poll_rx_cq</text>
+<text x="206.0" y="512.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5_cqwq_get_cqe          (owner bit: new?)</text>
+<text x="206.0" y="527.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  rq-&gt;handle_rx_cqe = mlx5e_handle_rx_cqe</text>
+<text x="206.0" y="541.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_skb_from_cqe_linear / _mpwrq_*</text>
+<text x="206.0" y="556.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_xdp_handle           (if XDP loaded)</text>
+<text x="206.0" y="570.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_complete_rx_cqe → mlx5e_handle_csum</text>
+<text x="206.0" y="585.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  napi_gro_receive</text>
+<rect x="780" y="434.0" width="400" height="166.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="460.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">NAPI poll (softirq)</text>
+<text x="980.0" y="475.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">same core; TX CQs first, then RX, budget 64</text>
+<rect x="788" y="484.0" width="384" height="93.0" rx="5" fill="#f4effa"/>
+<text x="796.0" y="498.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">net_rx_action → __napi_poll</text>
+<text x="796.0" y="512.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en_txrx.c  mlx5e_napi_poll</text>
+<text x="796.0" y="527.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_poll_tx_cq, mlx5e_poll_rx_cq</text>
+<text x="796.0" y="541.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_post_rx_wqes   (refill)</text>
+<text x="796.0" y="556.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  napi_complete_done</text>
+<text x="796.0" y="570.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_cq_arm         (re-arm)</text>
+<rect x="1210" y="434.0" width="560" height="166.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="460.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Driver: mlx5e_xmit  (.ndo_start_xmit)</text>
+<text x="1490.0" y="475.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">DMA-map the data, write a WQE into the SQ</text>
+<rect x="1218" y="484.0" width="544" height="93.0" rx="5" fill="#f4effa"/>
+<text x="1226.0" y="498.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en_tx.c  mlx5e_xmit</text>
+<text x="1226.0" y="512.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_sq_xmit_prepare</text>
+<text x="1226.0" y="527.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_sq_xmit_wqe</text>
+<text x="1226.0" y="541.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    mlx5e_txwqe_build_eseg → _eseg_csum (offloads)</text>
+<text x="1226.0" y="556.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    mlx5e_txwqe_build_dsegs → dma_map_single</text>
+<text x="1226.0" y="570.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">    mlx5e_txwqe_complete   (doorbell or wait)</text>
+<rect x="190" y="626.5" width="330" height="151.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="355.0" y="652.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Refill + re-arm</text>
+<text x="355.0" y="667.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">fresh buffers into the RQ, then re-arm the CQ</text>
+<rect x="198" y="676.0" width="314" height="93.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="690.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en_rx.c  mlx5e_post_rx_wqes</text>
+<text x="206.0" y="704.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  (striding RQ: mlx5e_post_rx_mpwqes)</text>
+<text x="206.0" y="719.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  page_pool_dev_alloc_netmems</text>
+<text x="206.0" y="733.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5_wq_cyc_update_db_record</text>
+<text x="206.0" y="748.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en/txrx.h  mlx5e_cq_arm</text>
+<text x="206.0" y="762.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → mlx5_cq_arm   (UAR doorbell)</text>
+<rect x="780" y="626.5" width="400" height="151.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="652.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Hard IRQ handler</text>
+<text x="980.0" y="667.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">only schedules NAPI, then returns</text>
+<rect x="788" y="676.5" width="384" height="78.5" rx="5" fill="#f4effa"/>
+<text x="796.0" y="690.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">pci_irq.c  irq_int_handler → notifier</text>
+<text x="796.0" y="705.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">eq.c  mlx5_eq_comp_int</text>
+<text x="796.0" y="719.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  next_eqe_sw → mlx5_eq_cq_get</text>
+<text x="796.0" y="734.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en_txrx.c  mlx5e_completion_event</text>
+<text x="796.0" y="748.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  napi_schedule</text>
+<rect x="1500" y="626.5" width="270" height="151.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1635.0" y="652.0" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Ring the doorbell</text>
+<text x="1635.0" y="667.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">MMIO write to the NIC's UAR page</text>
+<rect x="1508" y="676.0" width="254" height="64.0" rx="5" fill="#f4effa"/>
+<text x="1516.0" y="690.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en/txrx.h  mlx5e_notify_hw</text>
+<text x="1516.0" y="704.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  *wq-&gt;db = pc; wmb()</text>
+<text x="1516.0" y="719.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5_write64 → sq-&gt;uar_map</text>
+<text x="1516.0" y="733.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">skipped while netdev_xmit_more()</text>
+<rect x="190" y="840.0" width="180" height="165.5" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="280.0" y="862.0" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">RQ</text>
+<rect x="202.0" y="874.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="228.0" y="874.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="254.0" y="874.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="280.0" y="874.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="306.0" y="874.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="332.0" y="874.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="280.0" y="919.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">receive queue: WQEs</text>
+<text x="280.0" y="934.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">→ empty buffers</text>
+<rect x="196" y="943.0" width="168" height="49.5" rx="5" fill="#f4effa"/>
+<text x="202.0" y="957.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5e_rq</text>
+<text x="202.0" y="971.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mlx5_wq_cyc / _wq_ll</text>
+<text x="202.0" y="986.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en_main.c mlx5e_open_rq</text>
+<rect x="380" y="840.0" width="180" height="165.5" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="470.0" y="862.0" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">Buffers</text>
+<text x="470.0" y="885.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">empty pages the NIC</text>
+<text x="470.0" y="900.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">will fill</text>
+<rect x="386" y="909.0" width="168" height="49.5" rx="5" fill="#f4effa"/>
+<text x="392.0" y="923.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">rq-&gt;page_pool</text>
+<text x="392.0" y="937.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">page_pool_create in</text>
+<text x="392.0" y="952.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  mlx5e_alloc_rq</text>
+<rect x="570" y="840.0" width="180" height="165.5" rx="9" fill="#ffffff" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="660.0" y="862.0" font-size="13.5" font-weight="700" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">RX CQ</text>
+<rect x="582.0" y="874.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="608.0" y="874.0" width="22.0" height="20" rx="3" fill="#1f6fd1" fill-opacity="0.35" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="634.0" y="874.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="660.0" y="874.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="686.0" y="874.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<rect x="712.0" y="874.0" width="22.0" height="20" rx="3" fill="#ffffff" stroke="#1f6fd1" stroke-width="1"/>
+<text x="660.0" y="919.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">one CQE per</text>
+<text x="660.0" y="934.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">packet received</text>
+<rect x="576" y="943.0" width="168" height="49.5" rx="5" fill="#f4effa"/>
+<text x="582.0" y="957.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5e_cq</text>
+<text x="582.0" y="971.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mlx5_cqwq_get_cqe</text>
+<text x="582.0" y="986.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mlx5e_open_cq</text>
+<rect x="780" y="840.0" width="230" height="165.5" rx="9" fill="#ffffff" stroke="#d1343a" stroke-width="1.6"/>
+<text x="895.0" y="862.0" font-size="13.5" font-weight="700" fill="#d1343a" text-anchor="middle" xml:space="preserve">EQ</text>
+<rect x="792.0" y="874.0" width="30.3" height="20" rx="3" fill="#d1343a" fill-opacity="0.35" stroke="#d1343a" stroke-width="1"/>
+<rect x="826.3" y="874.0" width="30.3" height="20" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<rect x="860.7" y="874.0" width="30.3" height="20" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<rect x="895.0" y="874.0" width="30.3" height="20" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<rect x="929.3" y="874.0" width="30.3" height="20" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<rect x="963.7" y="874.0" width="30.3" height="20" rx="3" fill="#ffffff" stroke="#d1343a" stroke-width="1"/>
+<text x="895.0" y="919.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">event queue:</text>
+<text x="895.0" y="934.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">“CQ n has new CQEs”</text>
+<rect x="786" y="943.0" width="218" height="49.5" rx="5" fill="#f4effa"/>
+<text x="792.0" y="957.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5_eq_comp</text>
+<text x="792.0" y="971.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">eq.c create_comp_eq</text>
+<text x="792.0" y="986.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">next_eqe_sw</text>
+<rect x="1210" y="840.0" width="170" height="165.5" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="1295.0" y="862.0" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">TX CQ</text>
+<rect x="1222.0" y="874.0" width="20.3" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1246.3" y="874.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1270.7" y="874.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1295.0" y="874.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1319.3" y="874.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1343.7" y="874.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="1295.0" y="919.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">one CQE per</text>
+<text x="1295.0" y="934.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">batch of WQEs</text>
+<rect x="1216" y="943.0" width="158" height="49.5" rx="5" fill="#f4effa"/>
+<text x="1222.0" y="957.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5e_cq</text>
+<text x="1222.0" y="971.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mlx5e_open_cq</text>
+<text x="1222.0" y="986.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mlx5e_poll_tx_cq</text>
+<rect x="1390" y="840.0" width="170" height="165.5" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="1475.0" y="862.0" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">SQ</text>
+<rect x="1402.0" y="874.0" width="20.3" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1426.3" y="874.0" width="20.3" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1450.7" y="874.0" width="20.3" height="20" rx="3" fill="#d9822b" fill-opacity="0.35" stroke="#d9822b" stroke-width="1"/>
+<rect x="1475.0" y="874.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1499.3" y="874.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<rect x="1523.7" y="874.0" width="20.3" height="20" rx="3" fill="#ffffff" stroke="#d9822b" stroke-width="1"/>
+<text x="1475.0" y="919.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">send queue: WQEs</text>
+<text x="1475.0" y="934.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">→ packet data</text>
+<rect x="1396" y="943.0" width="158" height="49.5" rx="5" fill="#f4effa"/>
+<text x="1402.0" y="957.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">struct mlx5e_txqsq</text>
+<text x="1402.0" y="971.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">mlx5e_open_txqsq</text>
+<text x="1402.0" y="986.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">sq-&gt;db.wqe_info</text>
+<rect x="1570" y="840.0" width="150" height="165.5" rx="9" fill="#ffffff" stroke="#d9822b" stroke-width="1.6"/>
+<text x="1645.0" y="862.0" font-size="13.5" font-weight="700" fill="#d9822b" text-anchor="middle" xml:space="preserve">Data</text>
+<text x="1645.0" y="885.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">the skb's bytes,</text>
+<text x="1645.0" y="900.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">DMA-mapped</text>
+<rect x="1576" y="909.0" width="138" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1582.0" y="923.0" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">skb-&gt;data + frags</text>
+<text x="1582.0" y="937.5" font-size="10.5" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">sq-&gt;db.dma_fifo</text>
+<path d="M370.0,884.0 L378.0,884.0" fill="none" stroke="#1f6fd1" stroke-width="1.6" marker-end="url(#ah-rx)"/>
+<path d="M1560.0,884.0 L1568.0,884.0" fill="none" stroke="#d9822b" stroke-width="1.6" marker-end="url(#ah-tx)"/>
+<rect x="190" y="1117.5" width="560" height="123.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="1143.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RX DMA engine  (hardware)</text>
+<text x="470.0" y="1158.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">takes the next RQ WQE, writes the packet into that buffer, then a CQE</text>
+<rect x="198" y="1167.5" width="544" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="1181.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">set up by: en_main.c  mlx5e_create_rq → CREATE_RQ</text>
+<text x="206.0" y="1196.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">           mlx5e_modify_rq_state   (RST → RDY)</text>
+<rect x="780" y="1117.5" width="400" height="123.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="1143.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Event + interrupt unit</text>
+<text x="980.0" y="1158.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">if the CQ is armed: EQE, then MSI-X</text>
+<rect x="788" y="1167.5" width="384" height="64.0" rx="5" fill="#f4effa"/>
+<text x="796.0" y="1181.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">vectors: mlx5_irq_table_create</text>
+<text x="796.0" y="1196.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → pci_alloc_irq_vectors</text>
+<text x="796.0" y="1210.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">moderation: mlx5_core_modify_cq_moderation</text>
+<text x="796.0" y="1225.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  adaptive (DIM): mlx5e_rx_dim_work</text>
+<rect x="1210" y="1117.5" width="560" height="123.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="1143.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">TX DMA engine  (hardware)</text>
+<text x="1490.0" y="1158.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">reads the WQE, then the packet data, later writes a CQE</text>
+<rect x="1218" y="1167.5" width="544" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1226.0" y="1181.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">set up by: en_main.c  mlx5e_create_sq → CREATE_SQ</text>
+<text x="1226.0" y="1196.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">           mlx5e_modify_sq   (RST → RDY)</text>
+<rect x="190" y="1260.5" width="560" height="108.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="1286.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RX packet pipeline</text>
+<text x="470.0" y="1301.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">parse, steering + RSS pick the RQ, check checksums, strip VLAN</text>
+<rect x="198" y="1310.5" width="544" height="49.5" rx="5" fill="#f4effa"/>
+<text x="206.0" y="1324.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">rules: fs_core.c  mlx5_add_flow_rules</text>
+<text x="206.0" y="1339.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">RSS:   en/rss.c, en/rqt.c   (TIR → RQT → RQ)</text>
+<text x="206.0" y="1353.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">result read by: mlx5e_handle_csum, mlx5e_skb_set_hash</text>
+<rect x="1210" y="1260.5" width="560" height="108.5" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="1286.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">TX packet pipeline</text>
+<text x="1490.0" y="1301.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">calculate checksums, TSO cuts big sends, insert VLAN</text>
+<rect x="1218" y="1310.5" width="544" height="49.5" rx="5" fill="#f4effa"/>
+<text x="1226.0" y="1324.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">asked for by the WQE built in mlx5e_xmit:</text>
+<text x="1226.0" y="1339.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  csum: mlx5e_txwqe_build_eseg_csum</text>
+<text x="1226.0" y="1353.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  TSO:  mlx5e_tx_get_gso_ihs, eseg-&gt;mss</text>
+<rect x="190" y="1389.0" width="560" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="470.0" y="1415.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">RX buffer (on-chip)</text>
+<text x="470.0" y="1430.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">holds packets for the pipeline; if full: pause / PFC, or drop</text>
+<rect x="198" y="1439.0" width="544" height="35.0" rx="5" fill="#f4effa"/>
+<text x="206.0" y="1453.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">en/port_buffer.c  mlx5e_port_manual_buffer_config</text>
+<text x="206.0" y="1467.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">PFC: en_dcbnl.c  mlx5e_dcbnl_ieee_setpfc</text>
+<rect x="1210" y="1389.0" width="560" height="94.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1490.0" y="1415.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">TX scheduler</text>
+<text x="1490.0" y="1430.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">picks which SQ sends next: QoS, rate limits, pause</text>
+<rect x="1218" y="1439.0" width="544" height="35.0" rx="5" fill="#f4effa"/>
+<text x="1226.0" y="1453.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">ETS: en_dcbnl.c  mlx5e_dcbnl_ieee_setets</text>
+<text x="1226.0" y="1467.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">rate limits / HTB: en/qos.c, en/htb.c</text>
+<rect x="780" y="1260.5" width="400" height="222.5" rx="9" fill="#f6f6f4" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="980.0" y="1286.5" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Firmware</text>
+<text x="980.0" y="1301.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">runs setup commands from the driver:</text>
+<text x="980.0" y="1316.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">create rings, steering rules, MTU, link.</text>
+<text x="980.0" y="1331.5" font-size="12" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">Not on the per-packet path.</text>
+<rect x="788" y="1340.5" width="384" height="49.5" rx="5" fill="#f4effa"/>
+<text x="796.0" y="1354.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">cmd.c  mlx5_cmd_exec</text>
+<text x="796.0" y="1369.0" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">  → mlx5_cmd_do → cmd_work_handler</text>
+<text x="796.0" y="1383.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">layouts: include/linux/mlx5/mlx5_ifc.h</text>
+<rect x="190" y="1503.0" width="1580" height="96.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="1529.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">MAC</text>
+<text x="238.0" y="1533.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">RX: find the frame, check the FCS (CRC),</text>
+<text x="238.0" y="1549.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">check the destination MAC, count</text>
+<text x="1722.0" y="1533.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" xml:space="preserve">TX: add the preamble and the</text>
+<text x="1722.0" y="1549.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" xml:space="preserve">FCS (CRC), respect the gap</text>
+<rect x="198" y="1563.0" width="1564" height="24" rx="5" fill="#f4effa"/>
+<text x="980.0" y="1579.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="middle" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">MTU: port.c mlx5_set_port_mtu      counters: en_stats.c (PPCNT register) → ethtool -S</text>
+<rect x="190" y="1619.0" width="1580" height="96.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="1645.0" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">PHY + SerDes</text>
+<text x="238.0" y="1649.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">RX: recover the clock, turn the signal into bits,</text>
+<text x="238.0" y="1665.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">decode, correct errors (FEC)</text>
+<text x="1722.0" y="1649.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" xml:space="preserve">TX: encode, add FEC, turn bits</text>
+<text x="1722.0" y="1665.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="end" xml:space="preserve">into an electrical or optical signal</text>
+<rect x="198" y="1679.0" width="1564" height="24" rx="5" fill="#f4effa"/>
+<text x="980.0" y="1695.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="middle" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">speed: port.c mlx5_port_set_eth_ptys      FEC: en/port.c mlx5e_set_fec_mode      link up/down: en_main.c mlx5e_update_carrier</text>
+<rect x="190" y="1753.0" width="1580" height="72.0" rx="9" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="980.0" y="1778.5" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="middle" xml:space="preserve">Port: RJ45 (copper BASE-T) or SFP / QSFP / OSFP cage (DAC / optical)</text>
+<rect x="198" y="1789.0" width="1564" height="24" rx="5" fill="#f4effa"/>
+<text x="980.0" y="1805.5" font-size="11" font-weight="normal" fill="#6b3fa0" text-anchor="middle" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">module info: port.c mlx5_query_module_eeprom (ethtool -m)      link settings: en_ethtool.c mlx5e_ethtool_set_link_ksettings</text>
+<circle cx="212" cy="146.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="150.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R13</text>
+<circle cx="1748" cy="146.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="150.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T1</text>
+<circle cx="212" cy="292.5" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="297.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R12</text>
+<circle cx="1158" cy="292.5" r="14" fill="#d9822b"/>
+<text x="1158.0" y="297.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T11</text>
+<circle cx="1748" cy="292.5" r="14" fill="#d9822b"/>
+<text x="1748.0" y="297.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T2</text>
+<circle cx="212" cy="456.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="460.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R11</text>
+<circle cx="802" cy="456.0" r="14" fill="#d1343a"/>
+<text x="802.0" y="460.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R10</text>
+<circle cx="1748" cy="456.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="460.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T3</text>
+<circle cx="212" cy="648.5" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="653.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R14</text>
+<circle cx="802" cy="648.5" r="14" fill="#d1343a"/>
+<text x="802.0" y="653.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R9</text>
+<circle cx="1748" cy="648.5" r="14" fill="#d9822b"/>
+<text x="1748.0" y="653.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T4</text>
+<circle cx="212" cy="1139.5" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="1144.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R6</text>
+<circle cx="728" cy="1139.5" r="14" fill="#1f6fd1"/>
+<text x="728.0" y="1144.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R7</text>
+<circle cx="802" cy="1139.5" r="14" fill="#d1343a"/>
+<text x="802.0" y="1144.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R8</text>
+<circle cx="1158" cy="1139.5" r="14" fill="#d9822b"/>
+<text x="1158.0" y="1144.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T10</text>
+<circle cx="1748" cy="1139.5" r="14" fill="#d9822b"/>
+<text x="1748.0" y="1144.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T5</text>
+<circle cx="212" cy="1282.5" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="1287.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R5</text>
+<circle cx="1748" cy="1282.5" r="14" fill="#d9822b"/>
+<text x="1748.0" y="1287.0" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T6</text>
+<circle cx="212" cy="1411.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="1415.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R4</text>
+<circle cx="1748" cy="1411.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="1415.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T7</text>
+<circle cx="212" cy="1541.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="1545.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R3</text>
+<circle cx="1748" cy="1541.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="1545.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T8</text>
+<circle cx="212" cy="1657.0" r="14" fill="#1f6fd1"/>
+<text x="212.0" y="1661.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R2</text>
+<circle cx="1748" cy="1657.0" r="14" fill="#d9822b"/>
+<text x="1748.0" y="1661.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">T9</text>
+<path d="M470.0,1877.0 L470.0,1827.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<text x="470.0" y="1895.0" font-size="12" font-weight="600" fill="#1f6fd1" text-anchor="middle" xml:space="preserve">bits arrive</text>
+<circle cx="440" cy="1863.0" r="14" fill="#1f6fd1"/>
+<text x="440.0" y="1867.5" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle" xml:space="preserve">R1</text>
+<path d="M470.0,1751.0 L470.0,1717.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M470.0,1617.0 L470.0,1601.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M470.0,1501.0 L470.0,1485.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M470.0,1387.0 L470.0,1371.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M470.0,1258.5 L470.0,1242.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M280.0,1115.5 L280.0,1007.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-rx)"/>
+<text x="286.0" y="1065.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read WQE</text>
+<path d="M470.0,1115.5 L470.0,1007.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<text x="476.0" y="1065.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write packet</text>
+<path d="M660.0,1115.5 L660.0,1007.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<text x="666.0" y="1065.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<path d="M750.0,1179.0 L778.0,1179.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-rx)"/>
+<path d="M895.0,1115.5 L895.0,1007.5" fill="none" stroke="#d1343a" stroke-width="2.2" marker-end="url(#ah-irq)"/>
+<text x="901.0" y="1065.5" font-size="11.5" font-weight="600" fill="#d1343a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write EQE</text>
+<path d="M1110.0,1115.5 L1110.0,780.0" fill="none" stroke="#d1343a" stroke-width="2.6" stroke-dasharray="7 5" marker-end="url(#ah-irq)"/>
+<text x="1116.0" y="1065.5" font-size="11.5" font-weight="600" fill="#d1343a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">MSI-X</text>
+<text x="1116.0" y="922.8" font-size="11.5" font-weight="600" fill="#d1343a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">interrupt</text>
+<path d="M980.0,624.5 L980.0,602.5" fill="none" stroke="#d1343a" stroke-width="2.2" marker-end="url(#ah-irq)"/>
+<path d="M780.0,517.2 L752.0,517.2" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M660.0,838.0 L660.0,602.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-rx)"/>
+<text x="666.0" y="644.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read CQE</text>
+<text x="666.0" y="659.5" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">+ data</text>
+<path d="M470.0,432.0 L470.0,410.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M470.0,268.5 L470.0,234.5" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<path d="M330.0,602.5 L330.0,624.5" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-rx)"/>
+<path d="M280.0,780.0 L280.0,838.0" fill="none" stroke="#1f6fd1" stroke-width="1.8" marker-end="url(#ah-rx)"/>
+<text x="286.0" y="813.0" font-size="11.5" font-weight="600" fill="#1f6fd1" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">new WQEs</text>
+<path d="M520.0,760.0 L765.0,760.0 L765.0,1096.5 L820.0,1096.5 L820.0,1115.5" fill="none" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#ah-gray)"/>
+<text x="526.0" y="754.0" font-size="11.5" font-weight="600" fill="#8a8a8a" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">arm CQ</text>
+<path d="M1490.0,234.5 L1490.0,268.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<path d="M1490.0,410.0 L1490.0,432.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<path d="M1475.0,602.5 L1475.0,838.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="1469.0" y="750.2" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">write WQE</text>
+<path d="M1640.0,602.5 L1640.0,624.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<path d="M1745.0,780.0 L1745.0,1115.5" fill="none" stroke="#d9822b" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#ah-tx)"/>
+<text x="1739.0" y="1057.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">MMIO</text>
+<text x="1739.0" y="1072.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="end" paint-order="stroke" stroke="#ffffff" stroke-width="4">doorbell</text>
+<path d="M1475.0,1115.5 L1475.0,1007.5" fill="none" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#ah-tx)"/>
+<text x="1481.0" y="1065.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read WQE</text>
+<path d="M1645.0,1007.5 L1645.0,1115.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="1651.0" y="1057.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">read</text>
+<text x="1651.0" y="1072.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">data</text>
+<path d="M1295.0,1115.5 L1295.0,1007.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="1301.0" y="1065.5" font-size="11.5" font-weight="600" fill="#d9822b" text-anchor="start" paint-order="stroke" stroke="#ffffff" stroke-width="4">write CQE</text>
+<path d="M1210.0,1179.0 L1182.0,1179.0" fill="none" stroke="#d9822b" stroke-width="1.8" marker-end="url(#ah-tx)"/>
+<path d="M1490.0,1242.5 L1490.0,1258.5" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<path d="M1490.0,1371.0 L1490.0,1387.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<path d="M1490.0,1485.0 L1490.0,1501.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<path d="M1490.0,1601.0 L1490.0,1617.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<path d="M1490.0,1717.0 L1490.0,1751.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<path d="M1490.0,1827.0 L1490.0,1877.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="1490.0" y="1895.0" font-size="12" font-weight="600" fill="#d9822b" text-anchor="middle" xml:space="preserve">bits leave</text>
+<path d="M980.0,432.0 L980.0,410.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="930.0" y="796.0" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="middle" xml:space="preserve">1 channel = 1 core: 1 IRQ, 1 NAPI, 1 RQ + its SQs</text>
+<path d="M30.0,1947.0 L76.0,1947.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" marker-end="url(#ah-rx)"/>
+<text x="86.0" y="1951.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">RX data path</text>
+<path d="M220.0,1947.0 L266.0,1947.0" fill="none" stroke="#d9822b" stroke-width="2.2" marker-end="url(#ah-tx)"/>
+<text x="276.0" y="1951.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">TX data path</text>
+<path d="M410.0,1947.0 L456.0,1947.0" fill="none" stroke="#d1343a" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-irq)"/>
+<text x="466.0" y="1951.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">interrupt (MSI-X)</text>
+<path d="M620.0,1947.0 L666.0,1947.0" fill="none" stroke="#1f6fd1" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-rx)"/>
+<text x="676.0" y="1951.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">read (dashed) = DMA read or CPU read</text>
+<path d="M980.0,1947.0 L1026.0,1947.0" fill="none" stroke="#8a8a8a" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#ah-gray)"/>
+<text x="1036.0" y="1951.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">arm CQ: “interrupt me next time”</text>
+<rect x="1310" y="1935.0" width="40" height="22" rx="4" fill="#f4effa"/>
+<text x="1318.0" y="1951.0" font-size="12" font-weight="normal" fill="#6b3fa0" text-anchor="start" font-family="Consolas, 'Cascadia Mono', Menlo, monospace" xml:space="preserve">fn</text>
+<text x="1360.0" y="1951.0" font-size="12.5" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">code that does or sets up the box</text>
+<text x="30.0" y="1977.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">File names are relative to drivers/net/ethernet/mellanox/mlx5/core/ in the Linux kernel (en_rx.c, en_tx.c, en_txrx.c, en_main.c, eq.c, pci_irq.c, cmd.c, ...). Indented lines are called from the line above. Names follow recent upstream kernels (6.x);</text>
+<text x="30.0" y="1993.0" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">older kernels and DOCA-Host (mlnx-ofa_kernel) may differ slightly.   WQE = work queue entry.  CQE = completion queue entry.  EQE = event queue entry.  skb = the kernel's packet object.</text>
+</svg>
