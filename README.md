@@ -271,6 +271,8 @@ DOCA is NVIDIA's own product, so most of its development happens in internal rep
 - **Check what is installed:** `ofed_info -s`, `dpkg -l | grep doca` (Ubuntu) or `rpm -qa | grep doca` (RHEL), and `modinfo mlx5_core | grep -i version`.
 - **The manager's key question:** for each release, which upstream kernel version is the backport based on, and which fixes and features are "DOCA-Host only" (not yet upstream)?
 
+**Go deeper:** [DOCA-Host vs MLNX_OFED vs inbox drivers](doca-host-vs-ofed-vs-inbox.md) covers the three ways mlx5 reaches a server. It includes the MLNX_OFED end-of-life timeline (October 2027), each profile in detail, how DOCA-Host replaces the inbox `ib_core`/`mlx5_core`, and the **compat layer** (`HAVE_*` checks, `mlx_compat`) that lets one source tree build on dozens of distro kernels. It ends with a lab you can run on one machine.
+
 ### 5.2 DOCA SDK
 
 - **What it is:** libraries and services to program BlueField DPUs, SuperNICs and the host, such as DOCA Flow (packet steering), DMA, Comch (host and DPU messaging), RDMA, GPUNetIO and telemetry. On BlueField it ships in the BFB image, the DPU's operating system bundle.
@@ -391,6 +393,7 @@ Do each lab in its week. Tick each item as you finish it.
 ### Lab 5: DOCA-Host and DOCA (week 5)
 
 - [ ] Install a DOCA-Host profile on a lab server and check the versions with `ofed_info -s`
+- [ ] Compare inbox and DOCA-Host on the same machine (driver path, version, `mlx_compat`), following the [lab in the DOCA-Host vs inbox page](doca-host-vs-ofed-vs-inbox.md#7-lab-see-all-three-on-one-machine)
 - [ ] Build and run one DOCA sample
 - [ ] Read the latest DOCA release notes and list 3 features owned by your team
 
@@ -460,7 +463,10 @@ ofed_info -s
 | LTS | Long-term support release |
 | lore | lore.kernel.org, the archive of all kernel mailing lists |
 | Merge window | The 2 weeks after a kernel release when new features enter mainline |
-| MLNX_OFED | The older NVIDIA driver bundle, replaced by DOCA-Host |
+| MLNX_OFED (MOFED) | The older NVIDIA driver bundle, replaced by DOCA-Host (`doca-ofed` profile). LTS only, end of life October 2027 |
+| Inbox driver | The mlx5 driver and rdma-core that ship inside the distro's own kernel and packages, with nothing installed from NVIDIA |
+| mlnx-ofa_kernel | The DOCA-Host / MLNX_OFED kernel package: backported mlx5 + RDMA core, built by DKMS |
+| Compat layer | `HAVE_*` feature checks and the `mlx_compat` module that let `mlnx-ofa_kernel` build on many kernels |
 | Patchwork | Web tracker of patches posted to a mailing list |
 | PMD | Poll Mode Driver, a DPDK driver |
 | RDMA / RoCE | Remote Direct Memory Access / RDMA over Converged Ethernet |
