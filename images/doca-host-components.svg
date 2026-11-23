@@ -1,0 +1,274 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1560" width="1800" height="1560" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="ah-6b6b70" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6b6b70"/></marker>
+<marker id="ah-1e8e3e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1e8e3e"/></marker>
+<marker id="ah-e8710a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e8710a"/></marker>
+<marker id="ah-1f6fd1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f6fd1"/></marker>
+<marker id="ah-1d1d1f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d1d1f"/></marker>
+<marker id="ah-7b3fbf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7b3fbf"/></marker>
+</defs>
+<rect width="1800" height="1560" fill="#ffffff"/>
+<text x="20" y="40" font-size="22" font-weight="700" fill="#1d1d1f" text-anchor="start" xml:space="preserve">DOCA-Host components: two ways to sit on a server, and where the compat layer lives</text>
+<text x="20" y="64" font-size="13.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Left: DOCA user space runs over the distro's own (inbox) kernel drivers, with no compat needed. Right: a DOCA-Host profile with a kernel part replaces the inbox RDMA/mlx5 stack, and the compat layer makes that one source build on every distro kernel.</text>
+<rect x="200" y="86" width="775" height="58" rx="10" fill="#1f6fd1"/>
+<text x="214" y="111" font-size="17" font-weight="700" fill="#ffffff" text-anchor="start" xml:space="preserve">A.  DOCA user space over the INBOX kernel</text>
+<text x="214" y="132" font-size="12.5" font-weight="normal" fill="#ffffff" text-anchor="start" xml:space="preserve">DOCA packages without the kernel part. The kernel's own mlx5 / RDMA modules stay. No compat.</text>
+<rect x="1000" y="86" width="775" height="58" rx="10" fill="#1e8e3e"/>
+<text x="1014" y="111" font-size="17" font-weight="700" fill="#ffffff" text-anchor="start" xml:space="preserve">B.  Full DOCA-Host profile REPLACES the inbox stack</text>
+<text x="1014" y="132" font-size="12.5" font-weight="normal" fill="#ffffff" text-anchor="start" xml:space="preserve">doca-ofed / doca-roce / doca-host-basic / doca-networking / doca-all: mlnx-ofa_kernel built by DKMS.</text>
+<rect x="10" y="156" width="1780" height="92" rx="12" fill="#f4f4f2"/>
+<text x="24" y="180" font-size="14.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Applications</text>
+<text x="24" y="199" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">customer code,</text>
+<text x="24" y="214" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">not part of DOCA-Host</text>
+<rect x="200" y="166" width="186" height="72" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="210" y="187" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Socket apps</text>
+<text x="210" y="206" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">web, DB, k8s pods</text>
+<rect x="396" y="166" width="186" height="72" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="406" y="187" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">NCCL / MPI / storage</text>
+<text x="406" y="206" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">RDMA verbs users</text>
+<rect x="592" y="166" width="186" height="72" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="602" y="187" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">DPDK apps, OVS</text>
+<text x="602" y="206" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">packet processing</text>
+<rect x="788" y="166" width="186" height="72" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="798" y="187" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">DOCA apps</text>
+<text x="798" y="206" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Flow, DMA, Comch,</text>
+<text x="798" y="222" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">GPUNetIO, telemetry</text>
+<rect x="1000" y="166" width="186" height="72" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="1010" y="187" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Socket apps</text>
+<text x="1010" y="206" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">web, DB, k8s pods</text>
+<rect x="1196" y="166" width="186" height="72" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="1206" y="187" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">NCCL / MPI / storage</text>
+<text x="1206" y="206" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">RDMA verbs users</text>
+<rect x="1392" y="166" width="186" height="72" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="1402" y="187" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">DPDK apps, OVS</text>
+<text x="1402" y="206" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">packet processing</text>
+<rect x="1588" y="166" width="186" height="72" rx="9" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="1598" y="187" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">DOCA apps</text>
+<text x="1598" y="206" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Flow, DMA, Comch,</text>
+<text x="1598" y="222" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">GPUNetIO, telemetry</text>
+<rect x="10" y="258" width="1780" height="150" rx="12" fill="#f4f4f2"/>
+<text x="24" y="282" font-size="14.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">User-space libraries</text>
+<text x="24" y="301" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">shipped by DOCA-Host</text>
+<text x="24" y="316" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">(green) in both modes</text>
+<rect x="200" y="268" width="251" height="62" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="210" y="289" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">DOCA Core + DOCA libraries</text>
+<text x="210" y="308" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Flow, DMA, Comch, RDMA, GPUNetIO</text>
+<rect x="461" y="268" width="251" height="62" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="471" y="289" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">MLNX-DPDK (mlx5 PMD)</text>
+<text x="471" y="308" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">common/mlx5, net/mlx5, DevX</text>
+<rect x="722" y="268" width="251" height="62" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="732" y="289" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">UCX / HPC-X, VMA, XLIO</text>
+<text x="732" y="308" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">OVS-DOCA (doca-networking/all)</text>
+<rect x="200" y="338" width="775" height="60" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="210" y="359" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">rdma-core: libibverbs + libmlx5 (DevX, Direct Verbs), librdmacm</text>
+<text x="210" y="378" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">NVIDIA build (or the distro's). Asks the kernel and firmware what is supported (query caps) and turns off what the inbox kernel lacks.</text>
+<rect x="1000" y="268" width="251" height="62" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1010" y="289" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">DOCA Core + DOCA libraries</text>
+<text x="1010" y="308" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Flow, DMA, Comch, RDMA, GPUNetIO</text>
+<rect x="1261" y="268" width="251" height="62" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1271" y="289" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">MLNX-DPDK (mlx5 PMD)</text>
+<text x="1271" y="308" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">common/mlx5, net/mlx5, DevX</text>
+<rect x="1522" y="268" width="251" height="62" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1532" y="289" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">UCX / HPC-X, VMA, XLIO</text>
+<text x="1532" y="308" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">OVS-DOCA (doca-networking/all)</text>
+<rect x="1000" y="338" width="775" height="60" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1010" y="359" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">rdma-core: libibverbs + libmlx5 (DevX, Direct Verbs), librdmacm</text>
+<text x="1010" y="378" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">NVIDIA build (version like 2410mlnx...), matched to the DOCA kernel stack it ships with.</text>
+<rect x="10" y="418" width="1780" height="70" rx="12" fill="#f4f4f2"/>
+<text x="24" y="442" font-size="14.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Tools</text>
+<text x="24" y="461" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">management and test</text>
+<rect x="200" y="427" width="382" height="52" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="210" y="448" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">MFT, mlnx-tools, perftest, doca-info</text>
+<text x="210" y="467" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">mst, mlxconfig, mlxlink, mlnx-fw-updater</text>
+<rect x="592" y="427" width="382" height="52" rx="9" fill="#e8eef8" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="602" y="448" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Distro tools</text>
+<text x="602" y="467" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">ethtool, devlink, rdma, iproute2, mstflint</text>
+<rect x="1000" y="427" width="382" height="52" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1010" y="448" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">MFT, mlnx-tools, perftest, doca-info</text>
+<text x="1010" y="467" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">+ ofed_info, openibd service, mlnx-ethtool/iproute2</text>
+<rect x="1392" y="427" width="382" height="52" rx="9" fill="#e8eef8" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1402" y="448" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Distro tools</text>
+<text x="1402" y="467" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">ethtool, devlink, rdma (still work)</text>
+<rect x="10" y="498" width="1780" height="62" rx="12" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="2" stroke-dasharray="10 6"/>
+<text x="24" y="522" font-size="14.5" font-weight="700" fill="#1e8e3e" text-anchor="start" xml:space="preserve">Stable user / kernel ABI</text>
+<text x="24" y="541" font-size="11.5" font-weight="normal" fill="#1e8e3e" text-anchor="start" xml:space="preserve">uAPI</text>
+<text x="200" y="523" font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">/dev/infiniband/uverbs* (ioctl), netlink (rdma, devlink, ethtool), sysfs, /dev/mst.</text>
+<text x="200" y="543" font-size="13" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">The kernel never breaks it: new user space runs on old kernels and the other way round.</text>
+<text x="1000" y="523" font-size="13" font-weight="600" fill="#1e8e3e" text-anchor="start" xml:space="preserve">This is why mode A needs no compat: DOCA user space only uses this door.</text>
+<text x="1000" y="543" font-size="13" font-weight="normal" fill="#1e8e3e" text-anchor="start" xml:space="preserve">What it finds behind it (kernel + firmware caps) decides which features work.</text>
+<rect x="10" y="570" width="1780" height="210" rx="12" fill="#f4f4f2"/>
+<text x="24" y="594" font-size="14.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Kernel modules</text>
+<text x="24" y="613" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">mlx5 + RDMA stack</text>
+<text x="24" y="628" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="24" y="643" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">who built them</text>
+<text x="24" y="658" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">decides who</text>
+<text x="24" y="673" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">supports them</text>
+<rect x="200" y="580" width="382" height="74" rx="9" fill="#e8eef8" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="210" y="601" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">mlx5_core</text>
+<text x="210" y="620" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">mlx5e Ethernet, eswitch, SR-IOV,</text>
+<text x="210" y="636" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">steering, devlink, health</text>
+<rect x="592" y="580" width="382" height="74" rx="9" fill="#e8eef8" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="602" y="601" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">mlx5_ib</text>
+<text x="602" y="620" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">RDMA / InfiniBand driver,</text>
+<text x="602" y="636" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">DevX object handling</text>
+<rect x="200" y="662" width="382" height="64" rx="9" fill="#e8eef8" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="210" y="683" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">ib_core, ib_uverbs, rdma_cm, ib_ipoib</text>
+<text x="210" y="702" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">the kernel's RDMA subsystem</text>
+<rect x="592" y="662" width="382" height="64" rx="9" fill="#e8eef8" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="602" y="683" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">nvme-rdma, rpcrdma, peer modules</text>
+<text x="602" y="702" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Lustre, GPFS, nvidia-peermem: vs distro headers</text>
+<text x="200" y="748" font-size="12.5" font-weight="600" fill="#1f6fd1" text-anchor="start" xml:space="preserve">/lib/modules/$(uname -r)/kernel/drivers/...   built and signed by the distro vendor,</text>
+<text x="200" y="766" font-size="12.5" font-weight="normal" fill="#1f6fd1" text-anchor="start" xml:space="preserve">source = upstream mlx5 at the distro's kernel version + what Red Hat / Canonical / SUSE backported</text>
+<rect x="1000" y="580" width="382" height="74" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1010" y="601" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">mlx5_core  (NVIDIA copy)</text>
+<text x="1010" y="620" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">same name, newer code: backport of</text>
+<text x="1010" y="636" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">recent upstream mlx5</text>
+<rect x="1392" y="580" width="382" height="74" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1402" y="601" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">mlx5_ib  (NVIDIA copy)</text>
+<text x="1402" y="620" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">needs the matching NVIDIA ib_core,</text>
+<text x="1402" y="636" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">so the whole stack is replaced</text>
+<rect x="1000" y="662" width="382" height="64" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1010" y="683" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">ib_core, ib_uverbs, rdma_cm, ib_ipoib</text>
+<text x="1010" y="702" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">NVIDIA's own copy of the RDMA subsystem</text>
+<rect x="1392" y="662" width="382" height="64" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1402" y="683" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">mlnx-nvme, mlnx-nfsrdma, peer modules</text>
+<text x="1402" y="702" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">must be rebuilt vs DOCA headers</text>
+<text x="1000" y="748" font-size="12.5" font-weight="600" fill="#1e8e3e" text-anchor="start" xml:space="preserve">/lib/modules/$(uname -r)/updates/dkms/...   package mlnx-ofa_kernel, built on the host by DKMS,</text>
+<text x="1000" y="766" font-size="12.5" font-weight="normal" fill="#1e8e3e" text-anchor="start" xml:space="preserve">signed with a local MOK key. depmod ranks updates/ above kernel/, so modprobe loads these.</text>
+<rect x="10" y="790" width="1780" height="176" rx="12" fill="#fdf6ee"/>
+<text x="24" y="814" font-size="14.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Compat layer</text>
+<text x="24" y="833" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">only in mode B</text>
+<text x="24" y="848" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="24" y="863" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">bridges new driver</text>
+<text x="24" y="878" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">code and old</text>
+<text x="24" y="893" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">kernel internals</text>
+<rect x="200" y="800" width="775" height="104" rx="9" fill="#fafafa" stroke="#c8c8c8" stroke-width="1.6"/>
+<text x="210" y="821" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">No compat layer here</text>
+<text x="210" y="840" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">The modules were compiled as part of this exact kernel, so every API they call exists.</text>
+<text x="210" y="856" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Cost: features are only what the distro backported. They can lag upstream by months or years.</text>
+<text x="210" y="872" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">The inbox files are what mode B hides. They stay on disk untouched (see the grey box on the right).</text>
+<rect x="200" y="912" width="775" height="44" rx="9" fill="#f7f7f7" stroke="#b0b0b0" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="210" y="933" font-size="12.5" font-weight="600" fill="#8a8a8a" text-anchor="start" xml:space="preserve">(inbox modules on disk: loaded here)</text>
+<text x="210" y="952" font-size="11.5" font-weight="normal" fill="#8a8a8a" text-anchor="start" xml:space="preserve">kernel/drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko and the rest</text>
+<rect x="1000" y="800" width="186" height="104" rx="9" fill="#fff1e0" stroke="#e8710a" stroke-width="1.6"/>
+<text x="1010" y="821" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">1. configure</text>
+<text x="1010" y="840" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">probes the target</text>
+<text x="1010" y="856" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">kernel headers:</text>
+<text x="1010" y="872" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">1000s of tiny test</text>
+<text x="1010" y="888" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">compiles</text>
+<line x1="1187" y1="852" x2="1195" y2="852" stroke="#e8710a" stroke-width="1.8" marker-end="url(#ah-e8710a)"/>
+<rect x="1196" y="800" width="186" height="104" rx="9" fill="#fff1e0" stroke="#e8710a" stroke-width="1.6"/>
+<text x="1206" y="821" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">2. config.h</text>
+<text x="1206" y="840" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">HAVE_* macros, e.g.</text>
+<text x="1206" y="856" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">HAVE_DEVLINK_</text>
+<text x="1206" y="872" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">REGISTER_GET_1_</text>
+<text x="1206" y="888" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">PARAM</text>
+<line x1="1383" y1="852" x2="1391" y2="852" stroke="#e8710a" stroke-width="1.8" marker-end="url(#ah-e8710a)"/>
+<rect x="1392" y="800" width="186" height="104" rx="9" fill="#fff1e0" stroke="#e8710a" stroke-width="1.6"/>
+<text x="1402" y="821" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">3. #ifdef HAVE_*</text>
+<text x="1402" y="840" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">inside mlx5 / RDMA</text>
+<text x="1402" y="856" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">sources picks the</text>
+<text x="1402" y="872" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">call that this</text>
+<text x="1402" y="888" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">kernel supports</text>
+<line x1="1579" y1="852" x2="1587" y2="852" stroke="#e8710a" stroke-width="1.8" marker-end="url(#ah-e8710a)"/>
+<rect x="1588" y="800" width="186" height="104" rx="9" fill="#fff1e0" stroke="#e8710a" stroke-width="1.6"/>
+<text x="1598" y="821" font-size="13.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">4. mlx_compat.ko</text>
+<text x="1598" y="840" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">+ include/linux/*.h</text>
+<text x="1598" y="856" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">overrides: helpers</text>
+<text x="1598" y="872" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">old kernels lack.</text>
+<text x="1598" y="888" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Loads first.</text>
+<rect x="1000" y="912" width="775" height="44" rx="9" fill="#f7f7f7" stroke="#b0b0b0" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="1010" y="933" font-size="12.5" font-weight="600" fill="#8a8a8a" text-anchor="start" xml:space="preserve">inbox modules still on disk in kernel/..., shadowed, not loaded</text>
+<text x="1010" y="952" font-size="11.5" font-weight="normal" fill="#8a8a8a" text-anchor="start" xml:space="preserve">remove the DOCA packages + depmod + rebuild initramfs and they come back</text>
+<rect x="10" y="976" width="1780" height="78" rx="12" fill="#f4f4f2"/>
+<text x="24" y="1000" font-size="14.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Distro kernel core</text>
+<text x="24" y="1019" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">internal kernel API:</text>
+<text x="24" y="1034" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">changes every release</text>
+<rect x="200" y="985" width="775" height="60" rx="9" fill="#e8eef8" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="210" y="1006" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Linux kernel core (RHEL 8 4.18, RHEL 9 5.14, Ubuntu 22.04 5.15 / 24.04 6.8, SLES 15 6.4 ...)</text>
+<text x="210" y="1025" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">netdev core, page_pool, XDP, PCI, DMA, devlink core, auxiliary bus, IRQ. Same kernel in both modes.</text>
+<rect x="1000" y="985" width="775" height="60" rx="9" fill="#e8eef8" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="1010" y="1006" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">The same distro kernel core</text>
+<text x="1010" y="1025" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Its internal API is NOT stable and differs on every distro: the compat layer is what lets mode B link to it.</text>
+<rect x="10" y="1064" width="1780" height="46" rx="12" fill="#ececf0"/>
+<text x="24" y="1092" font-size="14.5" font-weight="700" fill="#1d1d1f" text-anchor="start" xml:space="preserve">PCIe</text>
+<text x="200" y="1093" font-size="13" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">PCIe: physical function (PF) and SR-IOV virtual functions (VF), BAR doorbells, DMA to host memory, MSI-X interrupts. Same in both modes. The device cannot tell which driver is loaded.</text>
+<line x1="950" y1="488" x2="950" y2="578" stroke="#1e8e3e" stroke-width="2.4" marker-end="url(#ah-1e8e3e)"/>
+<line x1="1750" y1="488" x2="1750" y2="578" stroke="#1e8e3e" stroke-width="2.4" marker-end="url(#ah-1e8e3e)"/>
+<line x1="1750" y1="728" x2="1750" y2="798" stroke="#e8710a" stroke-width="2.4" marker-end="url(#ah-e8710a)"/>
+<line x1="1750" y1="906" x2="1750" y2="984" stroke="#e8710a" stroke-width="2.4" marker-end="url(#ah-e8710a)"/>
+<line x1="950" y1="726" x2="950" y2="984" stroke="#1f6fd1" stroke-width="2.4" marker-end="url(#ah-1f6fd1)"/>
+<rect x="10" y="1120" width="1780" height="300" rx="12" fill="#f1f1f4"/>
+<text x="24" y="1144" font-size="14.5" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Hardware</text>
+<text x="24" y="1163" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the same NIC</text>
+<text x="24" y="1178" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">under both modes</text>
+<text x="24" y="1193" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve"></text>
+<text x="24" y="1208" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">firmware does</text>
+<text x="24" y="1223" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">the real work:</text>
+<text x="24" y="1238" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">every driver</text>
+<text x="24" y="1253" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">config ends as a</text>
+<text x="24" y="1268" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">firmware command</text>
+<rect x="200" y="1132" width="560" height="276" rx="12" fill="#ffffff" stroke="#1d1d1f" stroke-width="2"/>
+<text x="214" y="1158" font-size="15.5" font-weight="700" fill="#1d1d1f" text-anchor="start" xml:space="preserve">ConnectX NIC / SuperNIC  (ConnectX-4 Lx ... ConnectX-8)</text>
+<text x="214" y="1178" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">No CPU for apps. The host's mlx5 driver is its only control plane.</text>
+<rect x="212" y="1192" width="261" height="84" rx="9" fill="#ececf0" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="222" y="1213" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Firmware</text>
+<text x="222" y="1232" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">command interface (mailboxes),</text>
+<text x="222" y="1248" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">caps, health, resource objects</text>
+<rect x="485" y="1192" width="261" height="84" rx="9" fill="#ececf0" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="495" y="1213" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">eswitch + flow steering</text>
+<text x="495" y="1232" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">SR-IOV VFs, OVS offload,</text>
+<text x="495" y="1248" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">HW steering tables</text>
+<rect x="212" y="1286" width="261" height="84" rx="9" fill="#ececf0" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="222" y="1307" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">RDMA / transport engine</text>
+<text x="222" y="1326" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">QPs, CQs, MKEYs, RoCE,</text>
+<text x="222" y="1342" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">GPUDirect RDMA</text>
+<rect x="485" y="1286" width="261" height="84" rx="9" fill="#ececf0" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="495" y="1307" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Ports</text>
+<text x="495" y="1326" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Ethernet or InfiniBand,</text>
+<text x="495" y="1342" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">up to 800 Gb/s</text>
+<text x="214" y="1392" font-size="11.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Firmware is burnt with mlnx-fw-updater / mlxfwmanager (DOCA-Host) or mstflint (inbox).</text>
+<rect x="780" y="1132" width="995" height="276" rx="12" fill="#ffffff" stroke="#7b3fbf" stroke-width="2.2"/>
+<text x="794" y="1158" font-size="15.5" font-weight="700" fill="#1d1d1f" text-anchor="start" xml:space="preserve">BlueField DPU  (BlueField-2, BlueField-3: needs DOCA-Host, not MLNX_OFED, on the host)</text>
+<text x="794" y="1178" font-size="12" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">A ConnectX inside, plus its own Arm computer. To the host it looks like a ConnectX (same mlx5 PCI functions).</text>
+<rect x="792" y="1192" width="300" height="178" rx="9" fill="#ececf0" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="802" y="1213" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">ConnectX core inside BlueField</text>
+<text x="802" y="1232" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">same firmware, eswitch, steering</text>
+<text x="802" y="1248" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">and RDMA engines as the NIC</text>
+<text x="802" y="1264" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve"></text>
+<text x="802" y="1280" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">In DPU mode the eswitch is</text>
+<text x="802" y="1296" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">owned by the Arm side, not</text>
+<text x="802" y="1312" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">the host: host PFs/VFs are</text>
+<text x="802" y="1328" font-size="12" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">switched by OVS on the Arm</text>
+<rect x="1104" y="1192" width="659" height="178" rx="9" fill="#f4eefb" stroke="#7b3fbf" stroke-width="1.6"/>
+<text x="1114" y="1213" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Arm subsystem: runs the BFB image (its own OS)</text>
+<rect x="1114" y="1224" width="314" height="66" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1124" y="1245" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">DOCA runtime + services</text>
+<text x="1124" y="1264" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">OVS-DOCA, DOCA Flow,</text>
+<text x="1124" y="1280" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">Comch server, telemetry</text>
+<rect x="1438" y="1224" width="314" height="66" rx="9" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="1448" y="1245" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">mlx5 + rdma-core on Arm</text>
+<text x="1448" y="1264" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">DOCA kernel part built for</text>
+<text x="1448" y="1280" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">the BFB kernel, representors</text>
+<rect x="1114" y="1298" width="639" height="62" rx="9" fill="#ececf0" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="1124" y="1319" font-size="14" font-weight="600" fill="#1d1d1f" text-anchor="start" xml:space="preserve">DPA (BlueField-3): data-path accelerator cores</text>
+<text x="1124" y="1338" font-size="11.5" font-weight="normal" fill="#45454a" text-anchor="start" xml:space="preserve">programmable with DOCA (FlexIO / DPA SDK), close to the packets</text>
+<line x1="480" y1="1110" x2="480" y2="1132" stroke="#1d1d1f" stroke-width="2.2" marker-start="url(#ah-1d1d1f)" marker-end="url(#ah-1d1d1f)"/>
+<line x1="1400" y1="1110" x2="1400" y2="1132" stroke="#1d1d1f" stroke-width="2.2" marker-start="url(#ah-1d1d1f)" marker-end="url(#ah-1d1d1f)"/>
+<path d="M 1769 300 L 1778 300 L 1778 1257 L 1765 1257" fill="none" stroke="#7b3fbf" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ah-7b3fbf)" marker-start="url(#ah-7b3fbf)"/>
+<text x="1772" y="760" font-size="12" font-weight="600" fill="#7b3fbf" text-anchor="middle" transform="rotate(-90 1772 760)">DOCA Comch / DMA: host DOCA apps talk to DOCA services on the Arm (over PCIe)</text>
+<rect x="20" y="1436" width="26" height="18" rx="4" fill="#e8eef8" stroke="#1f6fd1" stroke-width="1.6"/>
+<text x="54" y="1450" font-size="13" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">From the distro (inbox)</text>
+<rect x="253.6" y="1436" width="26" height="18" rx="4" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="1.6"/>
+<text x="287.6" y="1450" font-size="13" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Shipped by DOCA-Host</text>
+<rect x="465.6" y="1436" width="26" height="18" rx="4" fill="#fff1e0" stroke="#e8710a" stroke-width="1.6"/>
+<text x="499.6" y="1450" font-size="13" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Compat layer (mlnx-ofa_kernel build)</text>
+<rect x="792.8" y="1436" width="26" height="18" rx="4" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.6"/>
+<text x="826.8" y="1450" font-size="13" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Customer apps</text>
+<rect x="954.4" y="1436" width="26" height="18" rx="4" fill="#ececf0" stroke="#1d1d1f" stroke-width="1.6"/>
+<text x="988.4" y="1450" font-size="13" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Hardware / firmware</text>
+<rect x="1159.2" y="1436" width="26" height="18" rx="4" fill="#f7f7f7" stroke="#b0b0b0" stroke-width="1.6"/>
+<text x="1193.2" y="1450" font-size="13" font-weight="normal" fill="#1d1d1f" text-anchor="start" xml:space="preserve">Inbox modules on disk, not loaded</text>
+<text x="20" y="1476" font-size="12.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Green arrows cross the stable uAPI (both modes). Orange arrows: in mode B the driver reaches the kernel core only through the compat layer. Blue: in mode A the inbox modules call the kernel core directly.</text>
+<text x="20" y="1496" font-size="12.5" font-weight="normal" fill="#55555a" text-anchor="start" xml:space="preserve">Kubernetes: the NVIDIA Network Operator can do either mode, keeping the inbox driver or loading the DOCA-Host kernel part from a driver container.</text>
+</svg>

@@ -46,6 +46,21 @@ The upstream Linux kernel, rdma-core and DPDK are the **single source**. Every m
 | **New hardware support** | Only when the distro picks up the new kernel code | Ended. No new features after the last release | Yes. All new features go here. **BlueField-3 needs DOCA-Host**, not MLNX_OFED |
 | **Status** | Always there | LTS only. **Support ends October 2027** | Current product |
 
+**Hardware scope:** mlx5 (and so MLNX_OFED 5.x+, DOCA-Host and inbox mlx5) covers ConnectX-4 and newer, and BlueField. ConnectX-3 used the older **mlx4** driver, which was last supported in MLNX_OFED 4.9 LTS.
+
+### 1.1 All DOCA-Host components in one picture
+
+[![DOCA-Host components in two modes. Left: DOCA user space over the inbox kernel modules, crossing only the stable uAPI, with no compat. Right: a DOCA-Host profile replaces mlx5_core, mlx5_ib and ib_core with mlnx-ofa_kernel built by DKMS, which reaches the distro kernel core through the compat layer (configure, HAVE_* flags, ifdefs, mlx_compat). Bottom: PCIe, a ConnectX NIC, and a BlueField DPU with its ConnectX core, its Arm subsystem running the BFB image with DOCA services, and DPA](images/doca-host-components.png)](images/doca-host-components.png)
+
+How to read it:
+
+- **Two columns, the same server.** Column **A** is DOCA user space installed over the distro's own driver. Column **B** is a full DOCA-Host profile. The colours show who built each box: blue for the distro (inbox), green for DOCA-Host, orange for the compat layer.
+- **The green dashed line is the key to mode A.** User space reaches the kernel only through the stable uAPI (uverbs ioctl, netlink, sysfs). The kernel never breaks this, so DOCA libraries, MLNX-DPDK and rdma-core run over the inbox `mlx5_core`/`mlx5_ib` with no compat at all. They ask the kernel and firmware which features exist (query caps) and use only those.
+- **The orange band is the key to mode B.** The NVIDIA copies of `mlx5_core`, `mlx5_ib` and `ib_core` are newer than the kernel they load into. Below them, the kernel's *internal* API is not stable and differs per distro. The compat layer (configure → `HAVE_*` → `#ifdef` → `mlx_compat.ko`) is the adapter between the two. The inbox modules are still on disk (grey dashed boxes), shadowed by `updates/dkms/`.
+- **The hardware cannot tell which driver is loaded.** PCIe, the ConnectX firmware and the BlueField look the same to both columns. **BlueField** is a ConnectX core plus its own Arm computer. The Arm side runs the BFB image with its own mlx5, DOCA runtime and OVS-DOCA. In DPU mode it owns the eswitch. Host DOCA apps talk to it over Comch/DMA (purple dashed line).
+
+Editable source: [images/doca-host-components.svg](images/doca-host-components.svg).
+
 ---
 
 ## 2. MLNX_OFED → DOCA-Host: what changed
@@ -126,6 +141,8 @@ This is the part customers find surprising. When you install a DOCA-Host profile
 
 Kernel modules link to each other by exported symbols and by **struct layouts**. `mlx5_ib` from a newer code base expects a newer `ib_core` (new fields in `struct ib_device`, new verbs ops). Mixing a new `mlx5_ib` with the distro's older `ib_core` would crash or fail to load. So `mlnx-ofa_kernel` ships its **own copy of the RDMA core subsystem** together with the drivers. As a result, any other out-of-tree module that uses RDMA (Lustre, BeeGFS, GPFS, a vendor's storage driver, `nvidia-peermem`) **must be rebuilt against the DOCA-Host headers** and not against the distro's. NVIDIA ships its own `mlnx-nvme` and `mlnx-nfsrdma` for the same reason.
 
+**One driver per box.** The kernel can load only one `mlx5_core` and one `ib_core`. So every NVIDIA card in the server runs either the inbox stack or the DOCA-Host stack, never a mix. Because DOCA-Host also replaces `ib_core`, **another vendor's RDMA card in the same server** (its driver was built against the inbox `ib_core`) can stop working. This is a real support case for mixed-vendor servers.
+
 ### 4.2 How the kernel picks the DOCA modules and not the inbox ones
 
 ```
@@ -158,7 +175,7 @@ This is the engineering core of DOCA-Host, and most of your backport team's work
 
 Upstream mlx5 is written for **one** kernel: the current mainline. It freely uses the newest kernel APIs. A function that changed its arguments in 6.8, a new `page_pool` helper, a new `devlink` op, a renamed `netdev` field. Upstream does not care about older kernels. When an internal API changes, the person who changes it fixes every caller in the tree in the same patch series.
 
-DOCA-Host must take that same driver and build it on **dozens of kernels**: RHEL 8 (4.18), RHEL 9 (5.14), SLES 15, Ubuntu 20.04/22.04/24.04 (5.4 … 6.8), Debian, Oracle UEK, and also any custom kernel a customer builds with DKMS. Each one is missing different APIs. Enterprise kernels make it worse because Red Hat or SUSE backport *some* new APIs into an old version number, so "kernel ≥ 5.15" says nothing reliable about what exists.
+DOCA-Host must take that same driver and build it on **dozens of kernels**: RHEL 8 (4.18), RHEL 9 (5.14), SLES 15, Ubuntu 20.04/22.04/24.04 (5.4 … 6.8), Debian, Oracle UEK, and also any custom kernel a customer builds with DKMS. Each one is missing different APIs. Enterprise kernels live a long time: RHEL 9 stays on a 5.14-based kernel for about ten years. This is the main reason MLNX_OFED, and compat with it, exist at all. They also make it worse because Red Hat or SUSE backport *some* new APIs into an old version number, so "kernel ≥ 5.15" says nothing reliable about what exists.
 
 ### 5.2 The solution: test, don't guess
 
@@ -189,6 +206,31 @@ DOCA-Host must take that same driver and build it on **dozens of kernels**: RHEL
 | Bugs can live in the compat code itself (wrong `#ifdef`, a bad helper) | A bug that reproduces on DOCA-Host but not upstream (or not inbox) is often a compat bug. Triage should ask this first |
 | DKMS build failures on customer machines | Usually missing headers, a gcc mismatch, or a kernel newer than the release supports. These are among the most common support tickets |
 | Out-of-tree modules must build against DOCA's RDMA headers | Partners (storage, GPU) need clear guidance. This often comes back to your team |
+
+### 5.4 Where compat hurts, and how it could improve
+
+From the Nov 22 working session ([Improving Compat – Deep Dive](https://claude.ai/artifact/XfaJHAzdbULrpvTHdisXUZ), [MOFED and mlx5 – Learning Plan](https://claude.ai/artifact/DiFFhuhKQTYuVwtS7atpmv)). These are ideas to discuss with the team, not current NVIDIA practice.
+
+**Where the pain is**
+
+| Pain | What happens |
+| --- | --- |
+| Distro churn | Every new RHEL minor, Ubuntu HWE or SUSE service-pack kernel can add, change or remove APIs. The build breaks or, worse, it compiles but behaves differently |
+| `#ifdef` sprawl | APIs that are partial or keep changing create several branches per call site. The driver gets hard to read, review and keep in sync with upstream |
+| Silent wrong results | A probe that is too loose passes on a kernel where the API exists but behaves differently. You get runtime bugs, not build failures |
+| Slow configure | Hundreds of probe compiles per build, multiplied across the whole kernel matrix |
+| Drift from upstream | Every compat change moves the tree further from vanilla, so each upstream sync costs more |
+| Late detection | Breakage is often found only when QA or a customer installs on a new distro kernel |
+
+**Improvement directions**
+
+1. **Generate the probes, don't hand-write them.** Most probes check one of a few patterns: a symbol exists, a struct has a member, a function has a given signature. Describe the needed APIs in a declarative list and generate the test programs from it. Diff headers between kernel versions to flag API changes automatically. Find **dead probes** (true or false on every supported kernel) and delete them with their `#ifdef` branches.
+2. **Transform code instead of `#ifdef`-ing it.** The kernel [backports project](https://backports.docs.kernel.org/) kept the driver close to upstream and used Coccinelle semantic patches plus a compat library to rewrite it for older kernels. The benefit is a main tree that reads like upstream, so syncs and reviews get cheaper. The cost is more complex build tooling and harder debugging of generated code.
+3. **Thin wrappers, not `#ifdef`s at call sites.** Where `#ifdef`s remain, move them into small compat functions with the upstream name and signature. The driver calls the modern API, and only the wrapper changes when a kernel changes.
+4. **Shift left with CI on the kernel matrix.** Build and smoke-test every change against every supported kernel. Track kernels before they ship: CentOS Stream for future RHEL minors, and Ubuntu proposed and HWE kernels. Cache probe results per kernel. Add runtime tests to catch probes that pass but behave wrongly.
+5. **Shrink the problem.** Upstream first: every feature the distros backport is one less thing compat must carry, so work with Red Hat, Canonical and SUSE. Prune the matrix with customer data. Steer customers to inbox, or to DOCA user space over inbox (mode A in the figure), where the distro kernel is good enough.
+
+**Why not a kernel-independent driver core?** Device logic such as firmware commands and queue management could sit behind a thin OS layer, as NVIDIA's GPU driver does. But a NIC driver must plug deep into the netdev stack, the RDMA core, memory management, DMA and the IOMMU, and a missing kernel hook cannot be added from outside. Upstream maintainers also reject OS abstraction layers and midlayers, so such a driver could never become the inbox driver. **Conclusion:** the realistic gains come from automating and shrinking compat, not from replacing it.
 
 ---
 
@@ -227,6 +269,11 @@ DOCA-Host must take that same driver and build it on **dozens of kernels**: RHEL
 - [ ] What share of support tickets are DKMS or install problems, and what share are compat bugs?
 - [ ] Who talks to Red Hat, Canonical and SUSE about inbox backports, and how do we push a fix into inbox?
 - [ ] How many customers are still on MLNX_OFED, and what is the plan to move them before **October 2027**?
+- [ ] Does the team own the MLNX_OFED legacy LTS branches, the driver part of DOCA-Host, or both? Is the mandate to keep MLNX_OFED alive or to wind it down in favour of inbox and DOCA-Host?
+- [ ] How many `HAVE_*` probes exist today, and how many are dead on every supported kernel?
+- [ ] What share of compat build breaks does CI catch, and what share do QA or customers find?
+- [ ] Which distro kernels in the support matrix actually have customers?
+- [ ] Has the team tried generated probes or semantic patches (Coccinelle) before, and what happened?
 
 ---
 
